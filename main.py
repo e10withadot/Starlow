@@ -26,4 +26,4 @@ bot.load_extensions("commands.settings")
 bot.load_extensions("commands.battle")
 
 # Run the bot
-bot.run(asyncio_debug=True, coroutine_tracking_depth=20, propagate_interrupts=True)
+bot.run()
