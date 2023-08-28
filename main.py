@@ -10,7 +10,7 @@ miru.install(bot)
 @lightbulb.implements(lightbulb.SlashCommand)
 async def ping(ctx: lightbulb.Context) -> None:
 	# checks if bot is online, basically ping
-	await ctx.respond(f"I will dethrone Referee Toad and rule Butt Fables with an iron fist.\nElapsed Time: {time.process_time()}s")
+	await ctx.respond(f"Pong!\nElapsed Time: {time.process_time()}s")
 
 @bot.command
 @lightbulb.add_checks(lightbulb.owner_only)
