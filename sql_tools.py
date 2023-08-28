@@ -20,7 +20,8 @@ class StDbAccess():
 		item = self.conn.execute(f'SELECT settings FROM server_data WHERE guild_id = ?', (id,)).fetchone()
 		self.close()
 		if item:
-			return jsonStr(item[0])
+			if item[0]:
+				return jsonStr(item[0])
 		return None
 	
 	def get2(self, id: str):
@@ -29,9 +30,10 @@ class StDbAccess():
 		for column in columns:
 			item= self.conn.execute(f'SELECT {column} FROM server_data WHERE guild_id = ?', (id,)).fetchone()
 			if item:
-				items.append(jsonStr(item[0]))
-			else:
-				items.append(None)
+				if item[0]:
+					items.append(jsonStr(item[0]))
+					continue
+			items.append(None)
 		self.close()
 		return items
 	
