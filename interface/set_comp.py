@@ -37,7 +37,7 @@ class RewardPanel(views.Panel):
         embeds= c.StEmbed(title="Select Battle Reward", description="Choose what you get at the end of a battle, and how you get it!"),
         components= [
             Reward(), 
-            comp.SwitchButton("set", ['🖐️', '☝️', '👈'], ["All", "Choice", "Random"])
+            comp.SwitchButton(['🖐️', '☝️', '👈'], "set", ["All", "Choice", "Random"])
         ],
         obj= c.save['reward']
         )

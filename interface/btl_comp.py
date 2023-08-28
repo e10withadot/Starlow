@@ -46,8 +46,8 @@ class EnemyPanel(views.Panel):
 		items= [
 		comp.NameButton(),
 		comp.StatButton(),
-		ToggleSpiny(),
-		ToggleFlying()
+		comp.ToggleButton("spiny", "Spiny"),
+		comp.ToggleButton("flying", "Flying")
 		]),
 		comp.DupButton(),
 		comp.DelButton(),
@@ -159,17 +159,6 @@ class SpawnEnemies(comp.UIEdit):
 		else:
 			self.disabled= True
 
-# updating og phase view components
-async def phaseComp(og: miru.View, view: miru.View, ctx: miru.ViewContext):
-	# updating UIEdit components
-	for i in [1,2]:
-		view.children[i].onChange()
-	await ctx.edit_response(components= view)
-	for child in og.children:
-		if child.__class__.__name__ in ["SpawnEnemies", "comp.ValueEdit", "comp.DupButton" ,"comp.DelButton"]:
-			child.onChange()
-	await og.message.edit(components=og)
-
 # enemy selection
 class EnemySelect(miru.TextSelect):
 	def __init__(self):
@@ -214,7 +203,8 @@ class EnemySelect(miru.TextSelect):
 			c.save["phases"][self.view.num]= spawn
 		# updating root embed and components
 		await views.updateEmbed(self.view.og)
-		await phaseComp(self.view.og, self.view, ctx)
+		await views.updateComp(self.view, ctx)
+		await views.updateComp(self.view.og, ctx)
 
 # delete recent spawn
 class DelSpawn(comp.DelButton):
@@ -234,7 +224,8 @@ class DelSpawn(comp.DelButton):
 			c.save["phases"].pop(self.view.num)
 			c.save["phases"]["names"].pop(self.view.num)
 			delattr(self.view, "num")
-			await phaseComp(self.view.og, self.view, ctx)
+			await views.updateComp(self.view, ctx)
+			await views.updateComp(self.view.og, ctx)
 		if self.view.page == len(self.view.og.pages):
 			self.view.og.page-=1
 		await views.updateEmbed(self.view.og)
@@ -258,7 +249,8 @@ class ClearSpawn(miru.Button):
 		c.save["phases"].pop(self.view.num)
 		c.save["phases"]["names"].pop(self.view.num)
 		delattr(self.view, "num")
-		await phaseComp(self.view.og, self.view, ctx)
+		await views.updateComp(self.view, ctx)
+		await views.updateComp(self.view.og, ctx)
 		if self.view.page == len(self.view.og.pages):
 			self.view.og.page-=1
 		await views.updateEmbed(self.view.og)
@@ -267,7 +259,7 @@ class ClearSpawn(miru.Button):
 class Advanced(comp.SwitchButton):
 	def __init__(self):
 		super().__init__(
-		emojis=[chr(0x1F53D), chr(0x1F53C)],
+		emojis=['🔽', '🔼'],
 		row=1
 		)
 		
@@ -291,77 +283,18 @@ class Advanced(comp.SwitchButton):
 			),
 			comp.DupButton()
 		]
-		super().callback(ctx)
-		if self.emoji == chr(0x1F53D):
+		if self.emoji == '🔽':
 			for item in items:
 				item.row= 2
+				self.view.add_item(item)
 				self.view.panels[self.view.now].comp.append(item)
+				item.onChange()
 		else:
-			for i in [5,4,3]:
+			for i in reversed(range(3,6)):
+				item= self.view.panels[self.view.now].comp[i]
+				self.view.remove_item(item)
 				self.view.panels[self.view.now].comp.pop()
-		await self.view.swapView(ctx, int(self.view.now))
-		await views.updateComp(self.view, ctx, 2)
-		
-# Spiny Toggle
-class ToggleSpiny(comp.SwitchButton):
-	def __init__(self):
-		super().__init__(
-		emojis= [chr(0x1F534), chr(0x1F7E2)],
-		label= "Spiny",
-		row=2
-		)
-		
-	def onChange(self):
-		if not c.save.get("enemies"):
-			self.disabled = True
-			return
-		self.disabled = False
-		# determine index
-		if self.index is None:
-			if c.save["enemies"][self.view.page]["spiny"]:
-				self.index= 1
-			else:
-				self.index= 0
-		super().onChange()
-
-	async def callback(self, ctx: miru.ViewContext):
-		super().callback(ctx)
-		if self.index == 1:
-			c.save["enemies"][self.view.page]["spiny"] = True
-		else:
-			c.save["enemies"][self.view.page]["spiny"] = False
-		await views.updateEmbed(self.view.og)
-		await views.updateComp(self.view, ctx, 2)
-
-# Flying Toggle
-class ToggleFlying(comp.SwitchButton):
-	def __init__(self):
-		super().__init__(
-		emojis= [chr(0x1F534), chr(0x1F7E2)],
-		label= "Flying",
-		row=2
-		)
-		
-	def onChange(self):
-		if not c.save.get("enemies"):
-			self.disabled = True
-			return
-		self.disabled = False
-		if self.index is None:
-			if c.save["enemies"][self.view.page]["flying"]:
-				self.index= 1
-			else:
-				self.index= 0
-		super().onChange()
-
-	async def callback(self, ctx: miru.ViewContext):
-		super().callback(ctx)
-		if self.index == 1:
-			c.save["enemies"][self.view.page]["flying"] = True
-		else:
-			c.save["enemies"][self.view.page]["flying"] = False
-		await views.updateEmbed(self.view.og)
-		await views.updateComp(self.view, ctx, 3)
+		await super().callback(ctx)
 
 # to moves menu
 class Moves(miru.Button):

@@ -8,7 +8,7 @@ from hikari import ButtonStyle, MessageFlag, Emoji
 
 # SwitchButton switches between a list of options
 class SwitchButton(miru.Button):
-	def __init__(self, key: str, emojis: list[Emoji], options: list[str] = None, **kwargs):
+	def __init__(self, emojis: list[Emoji], key: str = None, options: list[str] = None, **kwargs):
 		super().__init__(style= ButtonStyle.SECONDARY, **kwargs)
 		self.key= key
 		self.options = options
@@ -40,19 +40,20 @@ class SwitchButton(miru.Button):
 				else:
 					self.index = 0
 				break
-		if self.options:
-			output= self.options[self.index]
-		else:
-			output= bool(self.index)
-		if self.view.page is not None:
-			self.view.obj[self.view.page][self.key] = output
-		else:
-			self.view.obj[self.key] = output
-		if hasattr(self.view, 'og'):
-			view= self.view.og
-		else:
-			view= self.view
-		await views.updateEmbed(view)
+		if self.key:
+			if self.options:
+				output= self.options[self.index]
+			else:
+				output= bool(self.index)
+			if self.view.page is not None:
+				self.view.obj[self.view.page][self.key] = output
+			else:
+				self.view.obj[self.key] = output
+			if hasattr(self.view, 'og'):
+				view= self.view.og
+			else:
+				view= self.view
+			await views.updateEmbed(view)
 		# update self
 		self.onChange()
 		await ctx.edit_response(components= self.view)
@@ -62,7 +63,7 @@ class ToggleButton(SwitchButton):
 	def __init__(self, key: str, label: str, emojis: list[Emoji] = None):
 		if not emojis:
 			emojis= ['🔴', '🟢']
-		super().__init__(key, emojis, label= label)
+		super().__init__(emojis, key, label= label)
 	
 	def onChange(self):
 		if self.index is None:
@@ -139,7 +140,7 @@ class AddButton(ModalButton):
 			self.view.obj[i]= list(self.modal.values)[1].value
 		else:
 			self.view.obj[i]= deepcopy(self.temp)
-		await views.updateComp(self.view, ctx, range(1, length))
+		await views.updateComp(self.view, ctx)
 		await views.updateEmbed(self.view)
 		
 # value edit button
@@ -251,7 +252,7 @@ class NameButton(ValueEdit):
 			keys= ["/r", ]
 		else:
 			label= "Name & FP"
-			keys= ["name", "fp"]
+			keys= ["name", "FP"]
 			inputs.append(
 				miru.TextInput(label="FP", placeholder="Input default flower points.", required=True, max_length=2)
 			)
@@ -261,8 +262,7 @@ class NameButton(ValueEdit):
 		keys= keys,
 		title= title,
 		label= label,
-		style= ButtonStyle.SECONDARY,
-		row=2
+		style= ButtonStyle.SECONDARY
 		)
 		
 # Stat Input Button: calls modal
@@ -280,8 +280,7 @@ class StatButton(ValueEdit):
 		keys= ["HP", "POW", "DEF", "SPEED", "STACHE"],
 		label="Other Stats",
 		title= "Edit Stats",
-		style= ButtonStyle.SECONDARY,
-		row=2
+		style= ButtonStyle.SECONDARY
 		)
 
 # move editor panel
@@ -301,15 +300,15 @@ class MovePanel(views.Panel):
 			items= [
 			MoveEdit(),
 			ToggleButton("offense", 'Offensive'),
-			SwitchButton("target", ['🚹', '🚻', '❔'], ["One", "All", "Random"]),
-			SwitchButton("type", ['🔨', '👞', chr(0x1FA84)], ["Ground", "Aerial", "Magic"]),
-			SwitchButton("stat", ['♥', '🌻', '💥', '🛡️', '👟', chr(0x1F978)], ["HP", "FP", "POW", "DEF", "SPEED", "STACHE"])
+			SwitchButton(['🚹', '🚻', '❔'], "target",  ["One", "All", "Random"]),
+			SwitchButton(['🔨', '👞', chr(0x1FA84)], "type", ["Ground", "Aerial", "Magic"]),
+			SwitchButton(['♥', '🌻', '💥', '🛡️', '👟', chr(0x1F978)], "stat", ["HP", "FP", "POW", "DEF", "SPEED", "STACHE"])
 			]),
 			DupButton(),
 			DelButton()
 		]
 		if not c.enemy:
-			items[1].items.append(SwitchButton("rarity", ['🟡', '✨', '💥'], ["Normal", "Shiny", "Flashy"]))
+			items[1].items.append(SwitchButton(['🟡', '✨', '💥'], "rarity", ["Normal", "Shiny", "Flashy"]))
 		super().__init__(components= items, obj= c.moves)
 		
 	def onEdit(self):
@@ -431,5 +430,5 @@ class DelButton(miru.Button):
 		else:
 			for i in range(self.view.page, len(self.view.obj)-1):
 				self.view.obj[i]= self.view.obj.pop(i+1)
-		await views.updateComp(self.view, ctx, range(1, length))
+		await views.updateComp(self.view, ctx)
 		await views.updateEmbed(self.view)
