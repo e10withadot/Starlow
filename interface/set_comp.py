@@ -35,17 +35,23 @@ class RewardPanel(views.Panel):
     def __init__(self):
         super().__init__(
         embeds= c.StEmbed(title="Select Battle Reward", description="Choose what you get at the end of a battle, and how you get it!"),
-        components= [Reward(), RewardSet()]
+        components= [
+            Reward(), 
+            comp.SwitchButton("set", ['🖐️', '☝️', '👈'], ["All", "Choice", "Random"])
+        ],
+        obj= c.save['reward']
         )
 
 # miscellaneous settings panel
 class MiscPanel(views.Panel):
     def __init__(self):
         super().__init__([
-        HideHP(),
-        ToggleLuigi(),
+        comp.ToggleButton("hideHP", "Hide HP"),
+        comp.ToggleButton("luigi", "/luigi"),
         BtlChannel()
-        ])
+        ],
+        obj= c.save
+        )
     
     def onEdit(self):
         t1= boolTerm(c.save.get("hideHP"))
@@ -106,74 +112,6 @@ class Reward(miru.TextSelect):
 
     async def callback(self, ctx: miru.ViewContext) -> None:
         c.save["reward"]["items"] = self.values
-
-# Reward Distribution Toggle
-class RewardSet(comp.SwitchButton):
-    def __init__(self):
-        super().__init__(
-        options = ["All", "Choice", "Random"],
-        emojis = [chr(0x1F590), chr(0x261D), chr(0x1F448)]
-        )
-        
-    def onChange(self):
-        if self.index is None:
-            self.label = c.save["reward"]["set"]
-        super().onChange()
-
-    async def callback(self, ctx: miru.ViewContext):
-        super().callback(ctx)
-        c.save["reward"]["set"] = self.options[self.index]
-        await views.updateComp(self.view, ctx, range(2))
-
-# Hide HP Toggle
-class HideHP(comp.SwitchButton):
-    def __init__(self):
-        super().__init__(
-        emojis= [chr(0x1F534), chr(0x1F7E2)],
-        label = "Hide HP"
-        )
-    
-    def onChange(self):
-        if self.index is None:
-            if c.save.get("hideHP"):
-                self.index= 1
-            else:
-                self.index= 0
-        super().onChange()
-            
-    async def callback(self, ctx: miru.ViewContext):
-        super().callback(ctx)
-        if self.index == 1:
-            c.save.update({"hideHP": True})
-        else:
-            c.save.update({"hideHP": False})
-        await views.updateEmbed(self.view)
-        await views.updateComp(self.view, ctx)
-
-# /luigi Command Toggle
-class ToggleLuigi(comp.SwitchButton):
-    def __init__(self):
-        super().__init__(
-        emojis= [chr(0x1F7E2), chr(0x1F534)],
-        label= "/luigi"
-        )
-        
-    def onChange(self):
-        if self.index is None:
-            if not c.save.get("luigi"):
-                self.index= 1
-            else:
-                self.index= 0
-        super().onChange()
-            
-    async def callback(self, ctx: miru.ViewContext):
-        super().callback(ctx)
-        if self.index == 0:
-            c.save.update({"luigi": True})
-        else:
-            c.save.update({"luigi": False})
-        await views.updateEmbed(self.view)
-        await views.updateComp(self.view, ctx, 1)
 
 # Hosted Channel Selection
 class BtlChannel(miru.ChannelSelect):

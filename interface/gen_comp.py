@@ -8,8 +8,9 @@ from hikari import ButtonStyle, MessageFlag, Emoji
 
 # SwitchButton switches between a list of options
 class SwitchButton(miru.Button):
-	def __init__(self, emojis: Emoji, options = None, **kwargs):
+	def __init__(self, key: str, emojis: list[Emoji], options: list[str] = None, **kwargs):
 		super().__init__(style= ButtonStyle.SECONDARY, **kwargs)
+		self.key= key
 		self.options = options
 		if self.options:
 			self.label = self.options[0]
@@ -19,6 +20,10 @@ class SwitchButton(miru.Button):
 		
 	def onChange(self):
 		if self.index is None and self.options:
+			if self.view.page is not None:
+				self.label= self.view.obj[self.view.page][self.key]
+			else:
+				self.label= self.view.obj[self.key]
 			for i, option in enumerate(self.options):
 				if option == self.label:
 					self.index= i
@@ -27,7 +32,7 @@ class SwitchButton(miru.Button):
 			self.label = self.options[self.index]
 		self.emoji = self.emojis[self.index]
 		
-	def callback(self, ctx: miru.ViewContext):
+	async def callback(self, ctx: miru.ViewContext):
 		for i, emoji in enumerate(self.emojis):
 			if self.emoji == emoji:
 				if i+1 <= len(self.emojis)-1:
@@ -35,6 +40,37 @@ class SwitchButton(miru.Button):
 				else:
 					self.index = 0
 				break
+		if self.options:
+			output= self.options[self.index]
+		else:
+			output= bool(self.index)
+		if self.view.page is not None:
+			self.view.obj[self.view.page][self.key] = output
+		else:
+			self.view.obj[self.key] = output
+		if hasattr(self.view, 'og'):
+			view= self.view.og
+		else:
+			view= self.view
+		await views.updateEmbed(view)
+		# update self
+		self.onChange()
+		await ctx.edit_response(components= self.view)
+
+# button which toggles between bool
+class ToggleButton(SwitchButton):
+	def __init__(self, key: str, label: str, emojis: list[Emoji] = None):
+		if not emojis:
+			emojis= ['🔴', '🟢']
+		super().__init__(key, emojis, label= label)
+	
+	def onChange(self):
+		if self.index is None:
+			if self.view.page is not None:
+				self.index= int(self.view.obj[self.view.page][self.key])
+			else:
+				self.index= int(self.view.obj[self.key])
+		super().onChange()
 
 # modal call button
 class ModalButton(miru.Button):
@@ -94,9 +130,11 @@ class AddButton(ModalButton):
 	async def callback(self, ctx: miru.ViewContext):
 		length= len(self.view.panels[self.view.now].comp)
 		await super().callback(ctx)
+		# add name to list
 		name= list(self.modal.values)[0].value
 		self.view.obj["names"].append(name)
 		i= len(self.view.obj["names"])-1
+		# output to obj
 		if len(self.inputs) == 2:
 			self.view.obj[i]= list(self.modal.values)[1].value
 		else:
@@ -237,10 +275,6 @@ class StatButton(ValueEdit):
 			miru.TextInput(label="Speed", placeholder="Input default speed points. (If empty, Speed = 0)", max_length=2),
 			miru.TextInput(label="Stache", placeholder="Input default stache points. (If empty, Stache = 0)", max_length=2)
 		]
-		if c.enemy:
-			name= "enemies"
-		else:
-			name= "player"
 		super().__init__(
 		inputs= inputs,
 		keys= ["HP", "POW", "DEF", "SPEED", "STACHE"],
@@ -266,16 +300,16 @@ class MovePanel(views.Panel):
 			UIEdit(
 			items= [
 			MoveEdit(),
-			MoveOff(),
-			MoveTar(),
-			MoveType(),
-			MoveStat()
+			ToggleButton("offense", 'Offensive'),
+			SwitchButton("target", ['🚹', '🚻', '❔'], ["One", "All", "Random"]),
+			SwitchButton("type", ['🔨', '👞', chr(0x1FA84)], ["Ground", "Aerial", "Magic"]),
+			SwitchButton("stat", ['♥', '🌻', '💥', '🛡️', '👟', chr(0x1F978)], ["HP", "FP", "POW", "DEF", "SPEED", "STACHE"])
 			]),
 			DupButton(),
 			DelButton()
 		]
 		if not c.enemy:
-			items[1].items.append(MoveRare())
+			items[1].items.append(SwitchButton("rarity", ['🟡', '✨', '💥'], ["Normal", "Shiny", "Flashy"]))
 		super().__init__(components= items, obj= c.moves)
 		
 	def onEdit(self):
@@ -353,107 +387,6 @@ class MoveEdit(ValueEdit):
 		label= "Edit",
 		style= ButtonStyle.SECONDARY
 		)
-		
-# move rarity toggle
-class MoveRare(SwitchButton):
-	def __init__(self):
-		super().__init__(
-		options = ["Normal", "Shiny", "Flashy"],
-		emojis = [chr(0x1F7E1), chr(0x2728), chr(0x1F4A5)]
-		)
-
-	def onChange(self):
-		if self.index is None:
-			self.label = c.moves[self.view.page]["rarity"]
-		super().onChange()
-		
-	async def callback(self, ctx: miru.ViewContext):
-		super().callback(ctx)
-		c.moves[self.view.page]["rarity"] = self.options[self.index]
-		await views.updateEmbed(self.view.og)
-		await views.updateComp(self.view, ctx, 5)
-
-# move offense toggle
-class MoveOff(SwitchButton):
-	def __init__(self):
-		super().__init__(
-		options = ["Attack", "Recover/Buff"],
-		emojis = [chr(0x1F525), chr(0x1F496)]
-		)
-		
-	def onChange(self):
-		if self.index is None:
-			if not c.moves[self.view.page]["offense"]:
-				self.index= 1
-			else:
-				self.index= 0
-		super().onChange()
-			
-	async def callback(self, ctx: miru.ViewContext):
-		super().callback(ctx)
-		if bool(self.index):
-			c.moves[self.view.page]["offense"] = False
-		else:
-			c.moves[self.view.page]["offense"] = True
-		await views.updateEmbed(self.view.og)
-		await views.updateComp(self.view, ctx, 1)
-
-# move target selection
-class MoveTar(SwitchButton):
-	def __init__(self):
-		super().__init__(
-		options = ["One", "All", "Random"],
-		emojis = [chr(0x1F464), chr(0x1F465), chr(0x2754)]
-		)
-
-	def onChange(self):
-		if self.index is None:
-			self.label= c.moves[self.view.page]["target"]
-		super().onChange()
-		
-	async def callback(self, ctx: miru.ViewContext):
-		super().callback(ctx)
-		c.moves[self.view.page]["target"] = self.options[self.index]
-		await views.updateEmbed(self.view.og)
-		await views.updateComp(self.view, ctx, 2)
-
-# move type toggle
-class MoveType(SwitchButton):
-	def __init__(self):
-		super().__init__(
-		options = ["Ground", "Aerial", "Magic"],
-		emojis = [chr(0x1F45E), chr(0x1F985), chr(0x1FA84)]
-		)
-
-	def onChange(self):
-		if self.index is None:
-			self.label = c.moves[self.view.page]["type"]
-		super().onChange()
-		
-	async def callback(self, ctx: miru.ViewContext):
-		super().callback(ctx)
-		c.moves[self.view.page]["type"] = self.options[self.index]
-		await views.updateEmbed(self.view.og)
-		await views.updateComp(self.view, ctx, 3)
-
-# move affected stat toggle
-class MoveStat(SwitchButton):
-	def __init__(self):
-		super().__init__(
-		options = ["HP", "FP", "POW", "DEF", "SPEED", "STACHE"],
-		emojis = [chr(0x2665), chr(0x1F33B), chr(0x1F4A5), chr(0x1F6E1), chr(0x1F45F), chr(0x1F978)]
-		)
-
-	def onChange(self):
-		if self.index is None:
-			self.label = c.moves[self.view.page]["stat"]
-		super().onChange()
-		
-	async def callback(self, ctx: miru.ViewContext):
-		super().callback(ctx)
-		c.moves[self.view.page]["stat"] = self.options[self.index]
-		await views.updateEmbed(self.view.og)
-		await views.updateComp(self.view, ctx, 4)
 
 # generic duplication button
 class DupButton(miru.Button):
