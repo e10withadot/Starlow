@@ -19,7 +19,7 @@ class StDbAccess():
 	def get1(self, id: str):
 		item = self.conn.execute(f'SELECT settings FROM server_data WHERE guild_id = ?', (id,)).fetchone()
 		self.close()
-		if item[0]:
+		if item:
 			return jsonStr(item[0])
 		return None
 	
@@ -28,7 +28,7 @@ class StDbAccess():
 		columns= ["b0", "b1", "b2", "b3", "b4"]
 		for column in columns:
 			item= self.conn.execute(f'SELECT {column} FROM server_data WHERE guild_id = ?', (id,)).fetchone()
-			if item[0]:
+			if item:
 				items.append(jsonStr(item[0]))
 			else:
 				items.append(None)
@@ -74,6 +74,7 @@ def loadID(guildID: str, set: bool= True) -> dict | None:
 # is /luigi enabled?
 def isLuigi(guildID: str) -> bool:
 	global db
-	db.connect(PATH)
+	db.connect()
 	settings = db.get1(guildID)
-	return settings.get("luigi")
+	if settings:
+		return settings.get("luigi")
