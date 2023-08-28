@@ -129,15 +129,12 @@ class ViewSelect(miru.TextSelect):
 		await self.view.swapView(ctx, int(self.values[0]))
 
 # update view component
-async def updateComp(view, ctx, index = 0):
-	# update component
-	if isinstance(index, range):
-		for i in index:
-			item= view.children[i]
-			if hasattr(item, 'onChange'):
-				item.onChange()
-	else:
-		item= view.children[index]
+async def updateComp(view: miru.View, ctx: miru.ViewContext, index: range = None):
+	if not index:
+		index= range(0, len(view.children))
+	# update components
+	for i in index:
+		item= view.children[i]
 		if hasattr(item, 'onChange'):
 			item.onChange()
 	# edit response to include updated component
