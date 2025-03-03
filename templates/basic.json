@@ -1,0 +1,25 @@
+{
+    "names":
+    [
+        "Jump",
+        "Hammer"
+    ],
+    "0":
+    {
+        "amount": "0",
+        "hits": "2",
+        "offense": true,
+        "type": "Aerial",
+        "target": "One",
+        "stat": "HP"
+    },
+    "1":
+    {
+        "amount": "1",
+        "hits": "1",
+        "offense": true,
+        "type": "Ground",
+        "target": "One",
+        "stat": "HP"
+    }
+}

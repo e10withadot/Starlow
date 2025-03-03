@@ -1,0 +1,215 @@
+{
+    "names": 
+    [
+        "Mushroom",
+        "Iron Jump",
+        "Line Jump",
+        "Eekhammer",
+        "Slipper",
+        "Life Shroom",
+        "Fire Flower",
+        "Ice Flower",
+        "Hopslipper",
+        "Shell",
+        "POW Block",
+        "1-Up Shroom",
+        "Hurlhammer",
+        "Burnhammer",
+        "Chillhammer"
+    ], 
+    "0":
+    {
+        "info": "Heals 10 HP.",
+        "icon": "<:st_mush:1136186835069059243>",
+        "rarity": "Normal",
+        "amount": "10",
+        "hits": "1",
+        "cost": 0,
+        "offense": false,
+        "type": "Magic",
+        "target": "One",
+        "stat": "HP"
+    },
+    "1":
+    {
+        "info": "Jump, on spiked enemies too!",
+        "icon": "<:st_iron:1136336612851195904>",
+        "rarity": "Normal",
+        "amount": "0",
+        "hits": "2",
+        "cost": 0,
+        "offense": true,
+        "type": "Magic",
+        "target": "One",
+        "stat": "HP"
+    },
+    "2":
+    {
+        "info": "Jump on all enemies once!",
+        "icon": "<:st_line:1136527415577944175>",
+        "rarity": "Normal",
+        "amount": "0",
+        "hits": "1",
+        "cost": 0,
+        "offense": true,
+        "type": "Aerial",
+        "target": "All",
+        "stat": "HP"
+    },
+    "3":
+    {
+        "info": "Hammer 5 times!",
+        "icon": "<:st_eek:1136187012261629962>",
+        "rarity": "Normal",
+        "amount": "0",
+        "hits": "5",
+        "cost": 0,
+        "offense": true,
+        "type": "Ground",
+        "target": "One",
+        "stat": "HP"
+    },
+    "4":
+    {
+        "info": "Please don't.",
+        "icon": "<:st_slipper:1136332028934107208>",
+        "rarity": "Normal",
+        "amount": "0",
+        "hits": "1",
+        "cost": 0,
+        "offense": true,
+        "type": "Ground",
+        "target": "One",
+        "stat": "HP"
+    },
+    "5": 
+    {
+        "info": "Heals 25 HP.",
+        "icon": "<:st_life:1136347407513305220>",
+        "amount": "25",
+        "hits": "1",
+        "cost": 0,
+        "offense": false,
+        "rarity": "Shiny",
+        "type": "Magic",
+        "target": "One",
+        "stat": "HP"
+    },
+    "6":
+    {
+        "info": "Shoot fire at all enemies!",
+        "icon": "<:st_fire:1136186889699860632>",
+        "amount": "3",
+        "hits": "1",
+        "cost": 0,
+        "offense": true,
+        "rarity": "Shiny",
+        "type": "Ground",
+        "target": "All",
+        "stat": "HP"
+    },
+    "7":
+    {
+        "info": "Shoot ice at all enemies!",
+        "icon": "<:st_ice:1136331753355755620>",
+        "amount": "3",
+        "hits": "1",
+        "cost": 0,
+        "offense": true,
+        "rarity": "Shiny",
+        "type": "Ground",
+        "target": "All",
+        "stat": "HP"
+    },
+    "8":
+    {
+        "info": "Jump on an enemy 5 times!",
+        "icon": "<:st_hop:1136338930103488633>",
+        "amount": "0",
+        "hits": "5",
+        "cost": 0,
+        "offense": true,
+        "rarity": "Shiny",
+        "type": "Aerial",
+        "target": "One",
+        "stat": "HP"
+    },
+    "9":
+    {
+        "info": "Kick a shell that hits all enemies!",
+        "icon": "<:st_shell:1136188301817151548>",
+        "amount": "2",
+        "hits": "1",
+        "cost": 0,
+        "offense": true,
+        "rarity": "Shiny",
+        "type": "Ground",
+        "target": "All",
+        "stat": "HP"
+    },
+    "10":
+    {
+        "info": "Hits all enemies for BIG damage!",
+        "icon": "<:st_pow:1136331823849410600>",
+        "amount": "5",
+        "hits": "1",
+        "cost": 0,
+        "offense": true,
+        "rarity": "Flashy",
+        "type": "Ground",
+        "target": "All",
+        "stat": "HP"
+    },
+    "11":
+    {
+        "info": "Heals 50 HP.",
+        "icon": "<:st_1up:1136353240330547302>",
+        "amount": "50",
+        "hits": "1",
+        "cost": 0,
+        "offense": false,
+        "rarity": "Flashy",
+        "type": "Magic",
+        "target": "One",
+        "stat": "HP"
+    },
+    "12":
+    {
+        "info": "Throw the hammer from above!",
+        "icon": "<:st_hurl:1136188233487761449>",
+        "amount": "6",
+        "hits": "1",
+        "cost": 0,
+        "offense": true,
+        "rarity": "Flashy",
+        "type": "Magic",
+        "target": "All",
+        "stat": "HP"
+    },
+    "13":
+    {
+        "info": "Burns enemies to a crisp.",
+        "icon": "<:st_burn:1136343303688835143>",
+        "amount": "4",
+        "hits": "1",
+        "cost": 0,
+        "offense": true,
+        "rarity": "Flashy",
+        "type": "Ground",
+        "target": "All",
+        "stat": "HP"
+    },
+    "14":
+    {
+        "info": "Freezes enemies with a smack.",
+        "icon": "<:st_chill:1136527344899719290>",
+        "amount": "4",
+        "hits": "1",
+        "cost": 0,
+        "offense": true,
+        "rarity": "Flashy",
+        "type": "Ground",
+        "target": "All",
+        "stat": "HP"
+    }
+}
