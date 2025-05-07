@@ -58,6 +58,16 @@ class SetScreen(mm.Screen):
             return mm.ScreenContent(embeds=self.embeds)
         return mm.ScreenContent(embed=self.embeds)
 
+    async def update(self, ctx: miru.abc.Context):
+        '''
+        Updates state of screen.
+        '''
+        build = await self.build_content()
+        if build.embed:
+            await ctx.edit_response(content=build.content, embed=build.embed)
+        else:
+            await ctx.edit_response(content=build.content, embeds=build.embeds)
+
     @property
     def obj(self):
         if self.key:
@@ -351,7 +361,7 @@ class MainMenu(mm.Menu):
 
 class ConfirmView(miru.View):
     '''
-    confirmation prompt with yes and no buttons
+    Confirmation prompt with yes and no buttons.
     '''
 
     def __init__(self):

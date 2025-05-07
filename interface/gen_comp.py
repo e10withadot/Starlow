@@ -5,7 +5,7 @@ Generic components (Buttons, Selectors, Modals) used across the program.
 import miru
 from miru.ext import menu
 from copy import deepcopy
-from hikari import ButtonStyle, MessageFlag, Emoji
+from hikari import ButtonStyle, MessageFlag, Emoji, NotFoundError
 
 
 class StarlowButton(menu.ScreenButton):
@@ -55,7 +55,6 @@ class SwitchButton(StarlowButton):
             self.emoji = self.emojis[self.index]
 
     async def callback(self, ctx: miru.ViewContext):
-        # change index
         if self.options:
             max_index = len(self.options)-1
         else:
@@ -64,7 +63,6 @@ class SwitchButton(StarlowButton):
             self.index += 1
         else:
             self.index = 0
-        # update data
         if self.key:
             if self.options:
                 output = self.options[self.index].value
@@ -74,9 +72,7 @@ class SwitchButton(StarlowButton):
                 self.screen.obj[self.screen.page][self.key] = output
             else:
                 self.screen.obj[self.key] = output
-        # update menu
-        self.on_change()
-        await ctx.edit_response(components=self.menu)
+        await self.screen.update(ctx)
 
 
 class ToggleButton(SwitchButton):
@@ -121,6 +117,9 @@ class ModalButton(GhostButton):
         super().__init__(**kwargs)
 
     def refresh(self):
+        '''
+        Refreshes the info of the ModalButton's host.
+        '''
         pass
 
     async def callback(self, ctx: miru.ViewContext):
@@ -167,15 +166,14 @@ class AddButton(ModalButton):
 
     async def callback(self, ctx: miru.ViewContext):
         await super().callback(ctx)
-        # add name to list
         name = list(self.modal.values)[0].value
         self.screen.obj["names"].append(name)
         i = len(self.screen.obj["names"])-1
-        # output to obj
         if len(self.inputs) == 2:
             self.screen.obj[i] = list(self.modal.values)[1].value
         else:
             self.screen.obj[i] = deepcopy(self.temp)
+        await self.screen.update(ctx)
 
 
 class ValueEdit(ModalButton):
@@ -226,6 +224,7 @@ class ValueEdit(ModalButton):
             self.screen.obj.update(updated)
         elif updated:
             self.screen.obj[self.screen.page].update(updated)
+        await self.screen.update(self.modal.last_context)
 
 
 class UIEdit(GhostButton):
@@ -242,7 +241,6 @@ class UIEdit(GhostButton):
         self.items = items
 
     async def callback(self, ctx: miru.ViewContext):
-        # set new view
         view = GenView(deepcopy(self.items), self.view, self.screen.obj)
         await ctx.respond(components=view, flags=MessageFlag.EPHEMERAL)
         self.view.client.start_view(view)
@@ -256,21 +254,19 @@ class GenView(miru.View):
 
     def __init__(self, items, og: miru.View, obj: dict = None, timeout: int = 30.0):
         super().__init__(timeout=timeout)
-        # set og view and page
         self.og = og
         self.page = og.page
         self.obj = obj
         for item in items:
             self.add_item(item)
-            # edit components
             if hasattr(item, 'on_change'):
                 item.on_change()
 
     async def on_timeout(self):
         try:
             await self.message.delete()
-        except:
-            pass
+        except NotFoundError:
+            print("Original view could not be deleted- it was not found.")
 
 
 class NameButton(ValueEdit):
@@ -283,7 +279,6 @@ class NameButton(ValueEdit):
             miru.TextInput(label="Name", placeholder="Input name.",
                            required=True, max_length=30),
         ]
-        # adjust according to scenario
         if enemy:
             label = "Name"
             keys = ["/r", ]
@@ -337,7 +332,6 @@ class MoveEdit(ValueEdit):
     '''
 
     def __init__(self, badge: bool, enemy: bool):
-        # set inputs
         inputs = [
             miru.TextInput(
                 label="Name", placeholder="Input move name.", max_length=20, required=True),
@@ -347,7 +341,6 @@ class MoveEdit(ValueEdit):
                 label="Hits", placeholder="Input no. of times the move hits.", max_length=1, required=True)
         ]
         keys = ["/r", "amount", "hits"]
-        # add extra values
         extra = []
         eKeys = []
         if not enemy:
@@ -385,13 +378,10 @@ class DupButton(GhostButton):
         )
 
     async def callback(self, ctx: miru.ViewContext):
-        # save to new item
         self.screen.obj["names"].append(
             self.screen.obj["names"][self.screen.page])
         self.screen.obj[len(self.screen.obj) -
                         1] = deepcopy(self.screen.obj[self.screen.page])
-
-# generic delete button
 
 
 class DelButton(GhostButton):
