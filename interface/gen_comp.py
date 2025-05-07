@@ -177,8 +177,6 @@ class AddButton(ModalButton):
         else:
             self.screen.obj[i] = deepcopy(self.temp)
 
-# value edit button
-
 
 class ValueEdit(ModalButton):
     '''
@@ -193,7 +191,6 @@ class ValueEdit(ModalButton):
         super().__init__(inputs, title, **kwargs)
         self.keys = keys
 
-    # set default values from keys in obj
     def refresh(self):
         if self.keys:
             for i, key in enumerate(self.keys):
@@ -211,10 +208,8 @@ class ValueEdit(ModalButton):
 
     async def callback(self, ctx: miru.ViewContext):
         await super().callback(ctx)
-        # get list of all user input
         values = list(self.modal.values)
         updated = {}
-        # save values in keys
         for i, key in enumerate(self.keys):
             value = values[i].value
             if key == "/r":
@@ -231,7 +226,6 @@ class ValueEdit(ModalButton):
             self.screen.obj.update(updated)
         elif updated:
             self.screen.obj[self.screen.page].update(updated)
-        await self.menu.push(self.screen)
 
 
 class UIEdit(GhostButton):

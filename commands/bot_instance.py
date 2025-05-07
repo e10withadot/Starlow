@@ -112,7 +112,6 @@ class StarlowBot(hikari.GatewayBot):
         '''
         Handles initialization of slash commands.
         '''
-        # if slash command
         if isinstance(event.interaction, hikari.CommandInteraction) and event.interaction.command_type == CommandType.SLASH:
             name = event.interaction.command_name
             if name == "ping":
@@ -136,14 +135,10 @@ class StarlowBot(hikari.GatewayBot):
         '''
         Run the settings command.
         '''
-        # check db file for guild key
         loadedSave = sql_tools.loadID(event.interaction.guild_id)
         save = jsonStr(loadedSave) if loadedSave else c.def_settings
-        # set user
         user = event.interaction.user
-        # build menu
         menu = SettingsMenu(user, save)
         builder = await menu.build_response_async(self.client, MainScreen(menu))
         await builder.create_initial_response(event.interaction)
-        # starts view
         self.client.start_view(menu)
