@@ -70,6 +70,8 @@ class SetScreen(mm.Screen):
 
     @property
     def obj(self):
+        if not hasattr(self.menu, 'save'):
+            return None
         if self.key:
             return self.menu.save[self.key]
         return self.menu.save
@@ -138,6 +140,8 @@ class MoveScreen(SetScreen):
 
     @property
     def moves(self):
+        if not hasattr(self.menu, 'save'):
+            return None
         if self.enemy:
             return self.menu.save["enemies"][self.index]['moves']
         return self.menu.save['moves']
@@ -150,7 +154,7 @@ class MoveScreen(SetScreen):
             self.menu.save['moves'] = value
 
     async def build_content(self):
-        if len(self.moves) > 1:
+        if self.moves and (self.moves) > 1:
             self.embeds = []
             for i in range(len(self.moves)-1):
                 name = self.moves["names"][i]

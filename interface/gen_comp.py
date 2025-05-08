@@ -96,11 +96,11 @@ class ToggleButton(SwitchButton):
 
 class GhostButton(StarlowButton):
     '''
-    Disappears after one input.
+    Disappears before one input.
     '''
 
     def on_change(self):
-        if len(self.screen.obj) > 1:
+        if self.screen.obj and len(self.screen.obj) > 1:
             self.disabled = False
         else:
             self.disabled = True
@@ -163,6 +163,9 @@ class AddButton(ModalButton):
             style=ButtonStyle.SUCCESS,
             row=1
         )
+
+    def on_change(self):
+        pass
 
     async def callback(self, ctx: miru.ViewContext):
         await super().callback(ctx)
