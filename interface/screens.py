@@ -17,7 +17,11 @@ class ScreenSelect(mm.ScreenTextSelect):
     Screen selection interface.
     '''
 
-    def __init__(self, default_value: int, options: list[miru.SelectOption], **kwargs):
+    def __init__(self,
+                 default_value: int,
+                 options: list[miru.SelectOption],
+                 **kwargs
+                 ):
         options[default_value].is_default = True
         for i, option in enumerate(options):
             option.value = i
@@ -95,14 +99,31 @@ class MoveScreen(SetScreen):
     The screen for editing moves.
     '''
 
-    def __init__(self, menu: mm.Menu, enemy: bool, badge: bool = False, index: int = None):
+    def __init__(self,
+                 menu: mm.Menu,
+                 enemy: bool,
+                 badge: bool = False,
+                 index: int = None
+                 ):
         self.index = index
         self.enemy = enemy
         self.badge = badge
         items = [
-            comp.AddButton(template={"info": "", "icon": "", "amount": 0, "hits": 1, "cost": 0, "offense": True, "rarity": "Normal", "type": "Ground", "target": "One", "stat": "HP"},
-                           title="New Move"
-                           ),
+            comp.AddButton(
+                template={
+                    "info": "",
+                    "icon": "",
+                    "amount": 0,
+                    "hits": 1,
+                    "cost": 0,
+                    "offense": True,
+                    "rarity": "Normal",
+                    "type": "Ground",
+                    "target": "One",
+                    "stat": "HP"
+                },
+                title="New Move"
+            ),
             comp.UIEdit(
                 items=[
                     comp.MoveEdit(self.badge, self.enemy),
@@ -189,7 +210,9 @@ class MoveScreen(SetScreen):
                 self.embeds.append(embed)
         else:
             self.embeds = c.StEmbed(
-                title="No moves available.", description="Add a move and it will appear.")
+                title="No moves available.",
+                description="Add a move and it will appear."
+            )
         return await super().build_content()
 
 
@@ -198,7 +221,11 @@ class NavButton(comp.StarlowButton):
     Generic nav button class.
     '''
 
-    def __init__(self, label: str, style: ButtonStyle = ButtonStyle.PRIMARY, last: bool = False):
+    def __init__(self,
+                 label: str,
+                 style: ButtonStyle = ButtonStyle.PRIMARY,
+                 last: bool = False
+                 ):
         self.last = last
         super().__init__(label=label, style=style, row=0)
 
@@ -269,7 +296,8 @@ class PageModal(miru.Modal):
     def __init__(self, screen: mm.Screen):
         super().__init__(title="Page Select")
         self.screen = screen
-        self.add_item(miru.TextInput(label="Page", placeholder="Skip to which page?",
+        self.add_item(miru.TextInput(label="Page",
+                                     placeholder="Skip to which page?",
                       required=True, value=self.screen.page+1, max_length=2))
 
     async def callback(self, ctx: miru.ViewContext):
@@ -307,7 +335,10 @@ class PagedScreen(SetScreen):
     Screen object with pages.
     '''
 
-    def __init__(self, menu: mm.Menu, pages: list[hikari.Embed | list[hikari.Embed]]):
+    def __init__(self,
+                 menu: mm.Menu,
+                 pages: list[hikari.Embed | list[hikari.Embed]]
+                 ):
         super().__init__(menu, embeds=self.pages[0])
         self.pages = pages
         self.page = 0
@@ -329,7 +360,11 @@ class MainMenu(mm.Menu):
     Main menu interface object.
     '''
 
-    def __init__(self, user: hikari.User, save: dict, sys: list[miru.abc.ViewItem]):
+    def __init__(self,
+                 user: hikari.User,
+                 save: dict,
+                 sys: list[miru.abc.ViewItem]
+                 ):
         super().__init__()
         self.user = user
         self.save = save
@@ -347,7 +382,10 @@ class MainMenu(mm.Menu):
         *,
         ephemeral: bool = False
     ) -> miru.MessageBuilder:
-        return await super().build_response_async(client, self.__sysadd__(starting_screen), ephemeral=ephemeral)
+        return await super().build_response_async(client,
+                                                  self.__sysadd__(
+                                                      starting_screen),
+                                                  ephemeral=ephemeral)
 
     async def push(self, screen: SetScreen) -> None:
         await super().push(self.__sysadd__(screen))
@@ -359,7 +397,10 @@ class MainMenu(mm.Menu):
             return True
 
     async def on_timeout(self) -> None:
-        await self.ctx.respond(content="The request timed out.\nThe interface will no longer respond to inputs.", flags=MessageFlag.EPHEMERAL)
+        await self.ctx.respond(
+            content="The request timed out.\nThe interface will no longer respond to inputs.",
+            flags=MessageFlag.EPHEMERAL
+        )
         await self.message.delete()
 
 
@@ -392,7 +433,12 @@ class AlertButton(comp.StarlowButton):
     Button that spawns a ConfirmView.
     '''
 
-    def __init__(self, question: str, response: str, action: Callable = None, **kwargs):
+    def __init__(self,
+                 question: str,
+                 response: str,
+                 action: Callable = None,
+                 **kwargs
+                 ):
         self.question = question
         self.response = response
         self.action = action
@@ -401,7 +447,10 @@ class AlertButton(comp.StarlowButton):
 
     async def callback(self, ctx: miru.ViewContext):
         view = ConfirmView()
-        await ctx.respond(content=self.question, components=view, flags=MessageFlag.EPHEMERAL)
+        await ctx.respond(content=self.question,
+                          components=view,
+                          flags=MessageFlag.EPHEMERAL
+                          )
         self.view.client.start_view(view)
         await view.wait_for_input()
         view.stop()
@@ -422,7 +471,8 @@ class DismissButton(AlertButton):
         super().__init__(
             question="Would you like to quit? Your changes won't be saved.",
             response="Changes not saved.",
-            emoji=chr(0x1F6AB), label="Dismiss", row=4, style=ButtonStyle.SECONDARY
+            emoji=chr(0x1F6AB), label="Dismiss",
+            row=4, style=ButtonStyle.SECONDARY
         )
 
 

@@ -152,7 +152,11 @@ class AddButton(ModalButton):
             self,
             title: str,
             inputs=[miru.TextInput(
-                label="Name", placeholder="Input name.", required=True, max_length=30),],
+                label="Name",
+                placeholder="Input name.",
+                required=True,
+                max_length=30),
+            ],
             template: dict = None
     ):
         self.temp = template
