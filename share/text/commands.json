@@ -1,0 +1,18 @@
+{
+    "ping": "Check if the bot is online.",
+    "luigi": "Starlow's opinion on Luigi. (May include vulgar language)",
+    "settings": "Modify default player and battle settings.",
+    "battle": {
+        "desc": "Create, edit, and export battles.",
+        "create": "Create a new battle.",
+        "edit": {
+            "desc": "Edit an existing battle.",
+            "battle": "The battle you want to edit."
+        },
+        "start": {
+            "desc": "Start a battle.",
+            "battle": "A battle saved in Starlow.",
+            "file": "A Starlow-supported .json file."
+        }
+    }
+}

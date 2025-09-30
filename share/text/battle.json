@@ -1,0 +1,28 @@
+{
+    "editor": {
+        "phases": {
+            "empty": "An empty battle is a sad one.",
+            "no_enemy": "Add enemies to the enemy list, then return to spawn them to the battlefield.",
+            "no_phase": "Spawn enemies into battle with the button below."
+        },
+        "enemies": {
+            "new_enemy": "New Enemy",
+            "empty": {
+                "title": "No enemies.",
+                "desc": "Add an enemy with the button below."
+            },
+        },
+        "dialogue": {
+            "chars": {
+                "title": "No characters.",
+                "desc": "Add a character to use for dialogue events!"
+            },
+            "events": {
+                "label": {
+                    "title": "Dialogue Event",
+                    "desc": "[Character No.]:[Dialogue] (separated by new lines)."
+                }
+            }
+        }
+    }
+}

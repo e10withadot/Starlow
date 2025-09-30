@@ -16,16 +16,20 @@ class SettingsMenu(scr.MainMenu):
     '''
 
     def __init__(self, user: User, save: dict):
+        reset_txt = c.getAsset('text/settings.json').get('reset')
         # settings options
         # system buttons (shown in bottom row)
         sys = [
             scr.SaveButton(),
             scr.DismissButton(),
             scr.AlertButton(
-                question="Are you sure you want to reset? All your changes will be erased (custom moves won't be erased).",
-                response="Your settings have been reset.",
+                question=reset_txt['q'],
+                response=reset_txt['a'],
                 action=reset_settings,
-                emoji=chr(0x2716), label="Reset", row=4, style=ButtonStyle.DANGER
+                emoji=chr(0x2716),
+                label="Reset",
+                row=4,
+                style=ButtonStyle.DANGER
             )
         ]
         super().__init__(user, save, sys)
@@ -40,12 +44,7 @@ class MainScreen(scr.SetScreen):
     '''
 
     def __init__(self, menu: menu.Menu):
-        des = '''### Select Battle Mode
-**Stickers Mode (Default):** Use a variety of stickers for one-use moves! FP = max stickers.
-**Badges Mode:** Special attacks cost FP, and can be included with badges!
-
-### /luigi command
-Starlow insults Luigi in various manners. This command contains vulgar language, therefore, the option to disable it is provided.'''
+        des = c.getAsset('text/settings.json')['main']['desc']
         super().__init__(
             menu,
             embeds=c.StEmbed(title="Starlow Settings", description=des),
@@ -95,6 +94,7 @@ class PlayerSettings(scr.SetScreen):
         await self.menu.push(scr.MoveScreen(menu, False, c.badgeMode(self.menu.save)))
 
     async def build_content(self):
+        plyr_info = c.printEntityData(self.obj)
         move_info = ''
         if hasattr(self.menu.save, "moves"):
             for i, move in self.menu.save['moves']:
@@ -104,10 +104,7 @@ class PlayerSettings(scr.SetScreen):
         else:
             move_info += 'No moves.'
         title = "Player Settings"
-        info = f'''### Player Info
-Name: {self.obj.get('name')}, HP: {self.obj.get('HP')}, FP: {self.obj.get('FP')}, POW: {self.obj.get('POW')}, DEF: {self.obj.get('DEF')}, Speed: {self.obj.get('SPEED')}, Stache: {self.obj.get('STACHE')}.\n
-### Moves
-{move_info}'''
+        info = f'''### Player Info\n{plyr_info}\n### Moves\n{move_info}'''
         self.embeds = c.StEmbed(title=title, description=info)
         return await super().build_content()
 
@@ -135,22 +132,7 @@ class BattleSettings(scr.SetScreen):
             ])
 
     async def build_content(self):
-        des = f'''### Battle Channel
-Default channel where battles are hosted. ({self.obj['channel']})
-
-### Hide HP
-Enemy HP is hidden by default. Can be changed on a per-battle basis.
-
-### Reward
-Choose what you get at the end of a battle, and how you get it.
-**Reward Options:** HP-Up Heart, FP-Up Flower, Speed-Up Soles, Stache-Up Comb.
--# Every reward option increases the player's stats by 5.
-
-### Reward Distribution
-Choose how the reward is distributed.
-- **All:** Distributes every selected reward.
-- **Choice:** The server chooses between every selected reward.
-- **Random:** The reward is selected randomly.'''
+        des = c.getAsset('text/settings.json')['main']['battle']['desc']
         self.embeds = c.StEmbed(title="Battle Settings", description=des)
         return await super().build_content()
 

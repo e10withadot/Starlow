@@ -14,17 +14,22 @@ import interface.gen_comp as comp
 from hikari import ButtonStyle, MessageFlag, TextInputStyle
 
 # Battle Editor Panels
-# phase editor panel
 
 
 class PhasePanel(scr.SetScreen):
+    '''
+    phase editor panel
+    '''
+
     def __init__(self):
-        super().__init__(key="phases",
-                         components=[
-                             SpawnEnemies(),
-                             comp.DelButton(),
-                             Advanced()
-                         ])
+        super().__init__(
+            key="phases",
+            components=[
+                SpawnEnemies(),
+                comp.DelButton(),
+                Advanced()
+            ]
+        )
 
     def onEdit(self):
         if len(self.obj) > 1:
@@ -34,35 +39,47 @@ class PhasePanel(scr.SetScreen):
                 results = self.obj[i]
                 self.embeds.append(
                     c.StEmbed(title=conditions, description=results))
+            return
 
-        elif len(self.view.save["enemies"]) > 1:
-            self.embeds = c.StEmbed(title="An empty battle is a sad one.",
-                                    description="Spawn enemies into battle with the button below.")
+        phase_txt = c.getAsset("text/battle.json")['editor']['phases']
+        if len(self.view.save["enemies"]) > 1:
+            self.embeds = c.StEmbed(
+                title=phase_txt.get('empty'),
+                description=phase_txt.get('no_phase')
+            )
         else:
-            self.embeds = c.StEmbed(title="An empty battle is a sad one.",
-                                    description="Add enemies to the enemy list, then return to spawn them to the battlefield.")
-
-# enemy editor panel
+            self.embeds = c.StEmbed(
+                title=phase_txt.get('empty'),
+                description=phase_txt.get('no_enemy')
+            )
 
 
 class EnemyPanel(scr.SetScreen):
+    '''
+    enemy editor panel
+    '''
+
     def __init__(self):
-        super().__init__(key="enemies",
-                         components=[
-                             comp.AddButton(template={"HP": 5, "POW": 1, "DEF": 0, "SPEED": 0, "STACHE": 0, "spiny": False, "flying": False, "moves": {"names": []}},
-                                            title="New Enemy"
-                                            ),
-                             comp.UIEdit(
-                                 items=[
-                                     comp.NameButton(True),
-                                     comp.StatButton(),
-                                     comp.ToggleButton("spiny", "Spiny"),
-                                     comp.ToggleButton("flying", "Flying")
-                                 ]),
-                             comp.DupButton(),
-                             comp.DelButton(),
-                             Moves()
-                         ])
+        enemy_txt = c.getAsset("text/battle.json")['editor']['enemies']
+        super().__init__(
+            key="enemies",
+            components=[
+                comp.AddButton(
+                    template=c.def_enemy,
+                    title=enemy_txt['new_enemy']
+                ),
+                comp.UIEdit(
+                    items=[
+                        comp.NameButton(True),
+                        comp.StatButton(),
+                        comp.ToggleButton("SPINY", "Spiny"),
+                        comp.ToggleButton("FLYING", "Flying")
+                    ]),
+                comp.DupButton(),
+                comp.DelButton(),
+                Moves()
+            ]
+        )
 
     def onEdit(self):
         if len(self.obj) > 1:
@@ -70,23 +87,29 @@ class EnemyPanel(scr.SetScreen):
             for i in range(len(self.obj)-1):
                 name = self.obj["names"][i]
                 enemy = self.obj[i]
-                info = f"HP: {enemy.get('HP')}\nPOW: {enemy.get('POW')}\nDEF: {enemy.get('DEF')}\nSpeed: {enemy.get(
-                    'SPEED')}\nStache: {enemy.get('STACHE')}\nSpiny: {enemy.get('spiny')}\nFlying: {enemy.get('flying')}"
+                info = c.printEntityData(enemy)
                 self.embeds.append(c.StEmbed(title=name, description=info))
         else:
+            empty_txt = c.getAsset(
+                "text/battle.json")['editor']['enemies']['empty']
             self.embeds = c.StEmbed(
-                title="No enemies.", description="Add an enemy with the button below.")
-
-# character editor panel
+                title=empty_txt['title'],
+                description=empty_txt['desc']
+            )
 
 
 class CharPanel(scr.SetScreen):
+    '''
+    character editor panel
+    '''
+
     def __init__(self):
         inputs = [
             miru.TextInput(label="Name", placeholder="Input name.",
                            required=True, max_length=30),
             miru.TextInput(
-                label="Icon URL", placeholder="Input icon URL.", required=True, max_length=100)
+                label="Icon URL", placeholder="Input icon URL.",
+                required=True, max_length=100)
         ]
         super().__init__(key="dialogue",
                          components=[
@@ -115,16 +138,20 @@ class CharPanel(scr.SetScreen):
                 nEmbed.set_thumbnail(url)
                 self.embeds.append(nEmbed)
         else:
+            char_txt = c.getAsset(
+                "text/battle.json")['editor']['dialogue']['chars']
             self.embeds = c.StEmbed(
-                title="No characters.", description="Add a character to use for dialogue events!")
+                title=char_txt['title'],
+                description=char_txt['desc']
+            )
 
 # dialogue event editor panel
 
 
 class EventPanel(scr.SetScreen):
     def __init__(self):
-        inputs = [miru.TextInput(label="Dialogue Event", placeholder='[Character No.]:[Dialogue] (separate by new lines).',
-                                 style=TextInputStyle.PARAGRAPH, required=True, max_length=500), ]
+        event_txt = c.getAsset(
+            "text/battle.json")['dialogue']['events']['label']
         super().__init__(key="dialogue",
                          components=[
                              EventMod(),
@@ -408,44 +435,56 @@ class EventMod(comp.ModalButton):
             emoji = chr(0x2795)
             style = ButtonStyle.SUCCESS
             title = "Add Event"
-        super().__init__(inputs=[miru.TextInput(label="Dialogue Event", placeholder='[Character No.]:[Dialogue] (separate by new lines).', style=TextInputStyle.PARAGRAPH, required=True, max_length=500), ],
-                         title=title,
-                         emoji=emoji,
-                         style=style,
-                         row=1
-                         )
+        event_txt = c.getAsset(
+            "text/battle.json")['dialogue']['events']['label']
 
-    def refresh(self):
-        if self.edit:
-            value = ""
-            # array to modifiable input
-            for event in self.obj["events"][self.view.page]:
-                value += f"{event[0]}:{event[1]}\n"
-        else:
-            value = None
-        self.modal.children[0].value = value
+        super().__init__(
+            inputs=[
+                miru.TextInput(
+                    label=event_txt['title'],
+                    placeholder=event_txt['desc'],
+                    style=TextInputStyle.PARAGRAPH,
+                    required=True,
+                    max_length=500
+                ),
+            ],
+            title=title,
+            emoji=emoji,
+            style=style,
+            row=1
+        )
 
-    def on_change(self):
-        if len(self.obj["events"]) > 0:
-            self.disabled = False
-        elif self.edit:
-            self.disabled = True
+        def refresh(self):
+            if self.edit:
+                value = ""
+                # array to modifiable input
+                for event in self.obj["events"][self.view.page]:
+                    value += f"{event[0]}:{event[1]}\n"
+            else:
+                value = None
+            self.modal.children[0].value = value
 
-    async def callback(self, ctx: miru.ModalContext) -> None:
-        await super().callback(ctx)
-        # get event info
-        event = list(self.modal.values)[0].value
-        arr = []
-        # insert into array
-        for dialogue in event.split("\n"):
-            arr.append(dialogue.split(":"))
-        # if edit
-        if self.edit:
-            self.obj["events"][self.view.page] = arr
-        else:
-            self.obj["events"].append(arr)
-            await scr.updateComp(self.view, ctx, range(1, 4))
-        await scr.updateEmbed(self.view)
+        def on_change(self):
+            if len(self.obj["events"]) > 0:
+                self.disabled = False
+            elif self.edit:
+                self.disabled = True
+
+        async def callback(self, ctx: miru.ModalContext) -> None:
+            await super().callback(ctx)
+            # get event info
+            event = list(self.modal.values)[0].value
+            arr = []
+            # insert into array
+            for dialogue in event.split("\n"):
+                arr.append(dialogue.split(":"))
+            # if edit
+            if self.edit:
+                self.obj["events"][self.view.page] = arr
+            else:
+                self.obj["events"].append(arr)
+                await scr.updateComp(self.view, ctx, range(1, 4))
+            await scr.updateEmbed(self.view)
 
 # duplicate event button
 
@@ -522,7 +561,8 @@ class StAdd(miru.Button):
                     else:
                         self.view.save = self.view.obj
                     # save
-                    sql_tools.saveID(self.view.guild, self.view.save, False, i)
+                    sql_tools.saveID(
+                        self.view.guild, self.view.save, False, i)
                     self.view.output = True
                     await ctx.edit_response(content="Saved.", components=None)
                     break
@@ -555,14 +595,15 @@ class JsonExport(miru.Button):
                 self.view.save[key] = self.view.obj
             else:
                 self.view.save = self.view.obj
-            path = os.path.abspath(__file__).replace("btl_comp.py", "btl.json")
-            with open(path, "x") as file:
-                file.write(json.dumps(self.view.save))
-            try:
-                await asyncio.wait_for(await ctx.respond(attachment=path), timeout=10)
-            except Exception as e:
-                await ctx.edit_response(content=f"Upload failed. ({e})", components=None)
-            os.remove(path)
+                path = os.path.abspath(__file__).replace(
+                    "btl_comp.py", "btl.json")
+                with open(path, "x") as file:
+                    file.write(json.dumps(self.view.save))
+                    try:
+                        await asyncio.wait_for(await ctx.respond(attachment=path), timeout=10)
+                    except Exception as e:
+                        await ctx.edit_response(content=f"Upload failed. ({e})", components=None)
+                        os.remove(path)
             # edit confirmation and delete og
             await ctx.edit_response(content="Done.", components=None)
             await self.view.message.delete()

@@ -1,0 +1,12 @@
+{
+    "main": {
+        "desc": "### Select Battle Mode\n**Stickers Mode (Default):** Use a variety of stickers for one-use moves! FP = max stickers.\n**Badges Mode:** Special attacks cost FP, and can be included with badges!\n### /luigi command\nStarlow insults Luigi in various manners. This command contains vulgar language, therefore, the option to disable it is provided.",
+        "battle": {
+            "desc": "### Battle Channel\nDefault channel where battles are hosted.\n\n### Hide HP\nEnemy HP is hidden by default. Can be changed on a per-battle basis.\n\n### Reward\nChoose what you get at the end of a battle, and how you get it.\n **Reward Options:** HP-Up Heart, FP-Up Flower, Speed-Up Soles, Stache-Up Comb.\n-# Every reward option increases the player's stats by 5.\n\n### Reward Distribution\nChoose how the reward is distributed.\n- **All:** Distributes every selected reward.\n- **Choice:** The server chooses between every selected reward.\n- **Random:** The reward is selected randomly."
+        }
+    },
+    "reset": {
+        "q": "Are you sure you want to reset? All your changes will be erased (custom moves won't be erased).",
+        "a": "Your settings have been reset."
+    }
+}

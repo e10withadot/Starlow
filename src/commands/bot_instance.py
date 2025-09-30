@@ -2,6 +2,7 @@
 Handles bot commands.
 '''
 import hikari
+import random
 from hikari import SlashCommand, CommandOption, CommandChoice, CommandType
 import miru
 from time import time
@@ -9,7 +10,6 @@ import sql_tools
 import config as c
 from slipper import jsonStr
 from interface.set_comp import SettingsMenu, MainScreen
-from commands.luigi import luigi
 
 
 class Command:
@@ -45,27 +45,28 @@ class StarlowBot(hikari.GatewayBot):
         '''
         Builds all of Starlow's commands.
         '''
+        cmd_txt = c.getAsset("text/commands.json")
         # command info
         commands = [
-            Command("ping", "Check if the bot is online."),
+            Command("ping", cmd_txt.get('ping')),
             Command(
-                "luigi", "Starlow's opinion on Luigi. (May include vulgar language)"),
+                "luigi", cmd_txt.get('luigi')),
             Command(
-                "settings", "Modify default player and battle settings.", admin_command=True),
-            Command("battle", "Create, edit, and export battles.", [
+                "settings", cmd_txt.get('settings'), admin_command=True),
+            Command("battle", cmd_txt['battle']['desc'], [
                 CommandOption(
                     name="create",
-                    description="Create a new battle.",
+                    description=cmd_txt['battle']['create'],
                     type=hikari.OptionType.SUB_COMMAND
                 ),
                 CommandOption(
                     name="edit",
-                    description="Edit an existing battle.",
+                    description=cmd_txt['battle']['edit']['desc'],
                     type=hikari.OptionType.SUB_COMMAND,
                     options=[
                         CommandOption(
                             name="battle",
-                            description="The battle you want to edit.",
+                            description=cmd_txt['battle']['edit']['battle'],
                             choices=[CommandChoice(name=f"Slot {i}", value=f"{
                                                    i}") for i in range(1, 6)],
                             type=hikari.OptionType.STRING,
@@ -74,19 +75,19 @@ class StarlowBot(hikari.GatewayBot):
                     ]),
                 CommandOption(
                     name="start",
-                    description="Start a battle.",
+                    description=cmd_txt['battle']['start']['desc'],
                     type=hikari.OptionType.SUB_COMMAND,
                     options=[
                         CommandOption(
                             name="battle",
-                            description="A battle saved in Starlow.",
+                            description=cmd_txt['battle']['start']['battle'],
                             choices=[CommandChoice(name=f"Slot {i}", value=f"{
                                                    i}") for i in range(1, 6)],
                             type=hikari.OptionType.STRING
                         ),
                         CommandOption(
                             name="file",
-                            description="A Starlow-supported .json file.",
+                            description=cmd_txt['battle']['start']['file'],
                             type=hikari.OptionType.ATTACHMENT
                         )
                     ])
@@ -112,22 +113,30 @@ class StarlowBot(hikari.GatewayBot):
         '''
         Handles initialization of slash commands.
         '''
-        if isinstance(event.interaction, hikari.CommandInteraction) and event.interaction.command_type == CommandType.SLASH:
+        if isinstance(event.interaction, hikari.CommandInteraction) \
+                and event.interaction.command_type == CommandType.SLASH:
             name = event.interaction.command_name
             if name == "ping":
-                t = time()
-                await event.interaction.create_initial_response(
-                    hikari.ResponseType.MESSAGE_CREATE,
-                    "Pong!"
-                )
-                ct = time() - t
-                channel = await event.app.rest.fetch_channel(
-                    event.interaction.channel_id)
-                await channel.send(
-                    f"Response time: {round(ct, 2)}s"
-                )
+                if name == "ping":
+                    t = time()
+                    await event.interaction.create_initial_response(
+                        hikari.ResponseType.MESSAGE_CREATE,
+                        "Pong!"
+                    )
+                    ct = time() - t
+                    await event.interaction.edit_initial_response(
+                        f"Pong!\nResponse time: {round(ct, 2)}s"
+                    )
+
             elif name == "luigi":
-                await luigi(event)
+                if sql_tools.isLuigi(event.interaction.guild_id):
+                    responses = c.getAsset("text/luigi.txt").split("\n")
+                    await event.interaction.create_initial_response(
+                        hikari.ResponseType.MESSAGE_CREATE,
+                        random.choice(responses)
+                    )
+                else:
+                    await c.disabledCmd(event.interaction)
             elif name == "settings":
                 await self.settings(event)
 
