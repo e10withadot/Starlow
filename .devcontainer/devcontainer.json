@@ -1,7 +1,7 @@
 {
     "build" : {
         "dockerFile": "Dockerfile",
-	"context": "..",
+        "context": "..",
     },
     "runArgs": ["--env-file", "${localWorkspaceFolder}/.env"],
     "features":

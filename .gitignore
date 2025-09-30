@@ -1,0 +1,5 @@
+server_data.db
+.env
+.venv
+Session.vim
+__pycache__

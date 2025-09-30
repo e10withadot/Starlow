@@ -6,4 +6,4 @@ COPY . .
 
 RUN pip install --no-cache-dir -r requirements.list
 
-CMD [ "python", "-OO", "./main.py" ]
+CMD [ "python", "-OO", "src/main.py" ]
