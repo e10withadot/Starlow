@@ -1,8 +1,9 @@
 from commands.bot_instance import StarlowBot
 from random import choice
+from os import getenv
 import hikari
 
-bot = StarlowBot("[YOUR TOKEN HERE]")
+bot = StarlowBot(getenv("TOKEN"))
 
 
 @bot.listen()

@@ -1,0 +1,5 @@
+services:
+  discord:
+    build: .
+    env_file:
+      - .env
