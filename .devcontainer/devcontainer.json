@@ -7,25 +7,12 @@
     "features":
     {
         "ghcr.io/e10withadot/features/neovim:0": {},
-        "ghcr.io/georgofenbeck/features/lazygit-linuxbinary:1": {},
-        "ghcr.io/duduribeiro/devcontainer-features/tmux:1": {},
     },
     "mounts": [
         {
             "type": "bind",
             "source": "${localEnv:HOME}/.config/nvim/",
             "target": "/home/vscode/.config/nvim/"
-        },
-        {
-            "type": "bind",
-            "source": "${localEnv:HOME}/.tmux.conf",
-            "target": "/home/vscode/.tmux.conf"
-        },
-        {
-            "type": "bind",
-            "source": "${localEnv:HOME}/.ssh",
-            "target": "/home/vscode/.ssh"
         }
     ],
-    "postCreateCommand": "git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm"
 }
