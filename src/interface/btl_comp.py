@@ -13,7 +13,7 @@ import interface.screens as scr
 import interface.gen_comp as comp
 from hikari import ButtonStyle, MessageFlag, TextInputStyle
 
-# Battle Editor Panels
+btl_data = 'text/battle.json'
 
 
 class PhasePanel(scr.SetScreen):
@@ -41,7 +41,7 @@ class PhasePanel(scr.SetScreen):
                     c.StEmbed(title=conditions, description=results))
             return
 
-        phase_txt = c.getAsset("text/battle.json")['editor']['phases']
+        phase_txt = c.getAsset(btl_data)['editor']['phases']
         if len(self.view.save["enemies"]) > 1:
             self.embeds = c.StEmbed(
                 title=phase_txt.get('empty'),
@@ -60,13 +60,12 @@ class EnemyPanel(scr.SetScreen):
     '''
 
     def __init__(self):
-        enemy_txt = c.getAsset("text/battle.json")['editor']['enemies']
         super().__init__(
             key="enemies",
             components=[
                 comp.AddButton(
                     template=c.def_enemy,
-                    title=enemy_txt['new_enemy']
+                    title=c.getAsset(btl_data)['editor']['enemies']['new']
                 ),
                 comp.UIEdit(
                     items=[
@@ -91,7 +90,7 @@ class EnemyPanel(scr.SetScreen):
                 self.embeds.append(c.StEmbed(title=name, description=info))
         else:
             empty_txt = c.getAsset(
-                "text/battle.json")['editor']['enemies']['empty']
+                btl_data)['editor']['enemies']['empty']
             self.embeds = c.StEmbed(
                 title=empty_txt['title'],
                 description=empty_txt['desc']
@@ -104,22 +103,26 @@ class CharPanel(scr.SetScreen):
     '''
 
     def __init__(self):
+        char_modal = c.getAsset(btl_data)['editor']['chars']
+        char_name = char_modal['name']
+        char_url = char_modal['url']
         inputs = [
-            miru.TextInput(label="Name", placeholder="Input name.",
-                           required=True, max_length=30),
             miru.TextInput(
-                label="Icon URL", placeholder="Input icon URL.",
+                label=char_name['label'], placeholder=char_name['placeholder'],
+                required=True, max_length=30),
+            miru.TextInput(
+                label=char_url['label'], placeholder=char_url['placeholder'],
                 required=True, max_length=100)
         ]
         super().__init__(key="dialogue",
                          components=[
                              comp.AddButton(
-                                 title="Add Character",
+                                 title=char_modal['add'],
                                  inputs=inputs
                              ),
                              comp.ValueEdit(
                                  keys=["/r", "/n"],
-                                 title="Edit Character",
+                                 title=char_modal['edit'],
                                  inputs=inputs
                              ),
                              comp.DupButton(),
@@ -139,19 +142,19 @@ class CharPanel(scr.SetScreen):
                 self.embeds.append(nEmbed)
         else:
             char_txt = c.getAsset(
-                "text/battle.json")['editor']['dialogue']['chars']
+                btl_data)['editor']['chars']
             self.embeds = c.StEmbed(
                 title=char_txt['title'],
                 description=char_txt['desc']
             )
 
-# dialogue event editor panel
-
 
 class EventPanel(scr.SetScreen):
+    '''
+    dialogue event editor panel
+    '''
+
     def __init__(self):
-        event_txt = c.getAsset(
-            "text/battle.json")['dialogue']['events']['label']
         super().__init__(key="dialogue",
                          components=[
                              EventMod(),
@@ -185,14 +188,19 @@ class EventPanel(scr.SetScreen):
                 # append to embeds
                 self.embeds.append(dEmbeds)
         else:
+            event_txt = c.getAsset(
+                btl_data)['editor']['events']['label']
             self.embeds = c.StEmbed(
-                title="No events.", description="Create a dialogue event below!")
+                title=event_txt['title'], description=event_txt['desc'])
 
 # Battle Editor Components
-# condition add button: calls modal
 
 
 class SpawnEnemies(comp.UIEdit):
+    '''
+    condition add button: calls modal
+    '''
+
     def __init__(self):
         super().__init__(
             items=[
@@ -200,7 +208,8 @@ class SpawnEnemies(comp.UIEdit):
                 DelSpawn(),
                 ClearSpawn()
             ],
-            label="Spawn Enemies",
+            label=c.getAsset(
+                btl_data)['editor']['enemies']['spawn'],
             row=1
         )
 
@@ -210,14 +219,17 @@ class SpawnEnemies(comp.UIEdit):
         else:
             self.disabled = True
 
-# enemy selection
-
 
 class EnemySelect(miru.TextSelect):
+    '''
+    enemy selection
+    '''
+
     def __init__(self):
         super().__init__(
             options=[miru.SelectOption(label="n/a")],
-            placeholder="Add Enemies",
+            placeholder=c.getAsset(
+                btl_data)['editor']['enemies']['add'],
             disabled=True
         )
 
@@ -235,10 +247,12 @@ class EnemySelect(miru.TextSelect):
 
     async def callback(self, ctx: miru.ViewContext):
         # set up modal
+        num_txt = c.getAsset(btl_data)['editor']['enemies']['num']
         self.is_default = False
-        modal = comp.GenModal(title="Number of Enemies")
+        modal = comp.GenModal(title=num_txt['title'])
         modal.add_item(miru.TextInput(
-            label="Number", placeholder="Input amount of enemies.", required=True, max_length=1))
+            label=num_txt['label'], placeholder=num_txt['placeholder'],
+            required=True, max_length=1))
         await ctx.respond_with_modal(modal)
         await modal.wait()
         # outputting spawn syntax
@@ -260,13 +274,16 @@ class EnemySelect(miru.TextSelect):
         await scr.updateComp(self.view, ctx)
         await scr.updateComp(self.view.og, ctx)
 
-# delete recent spawn
-
 
 class DelSpawn(comp.DelButton):
+    '''
+    delete recent spawn
+    '''
+
     def __init__(self):
         super().__init__()
-        self.label = "Delete Recent"
+        self.label = c.getAsset(
+            btl_data)['editor']['enemies']['delete']
 
     def on_change(self):
         if hasattr(self.view, "num"):
@@ -287,13 +304,15 @@ class DelSpawn(comp.DelButton):
             self.view.og.page -= 1
         await scr.updateEmbed(self.view.og)
 
-# clear all spawns
-
 
 class ClearSpawn(miru.Button):
+    '''
+    clear all spawns
+    '''
+
     def __init__(self):
         super().__init__(
-            label="Clear",
+            label=c.getAsset(btl_data)['editor']['enemies']['clear'],
             style=ButtonStyle.SECONDARY,
             emoji=chr(0x1F6AB)
         )
@@ -330,19 +349,24 @@ class Advanced(comp.SwitchButton):
         super().on_change()
 
     async def callback(self, ctx: miru.ViewContext):
+        cond_txt = c.getAsset(btl_data)['editor']['condition']
         inputs = [
-            miru.TextInput(label="If", placeholder="Input condition.",
-                           required=True, max_length=50),
             miru.TextInput(
-                label="Then", placeholder="Input resulting event.", required=True, max_length=100)
+                label=cond_txt['if']['label'],
+                placeholder=cond_txt['if']['placeholder'],
+                required=True, max_length=50),
+            miru.TextInput(
+                label=cond_txt['then']['label'],
+                placeholder=cond_txt['then']['placeholder'],
+                required=True, max_length=100),
         ]
         items = [
             comp.AddButton(inputs=inputs,
-                           title="Add Condition",
+                           title=cond_txt['add'],
                            ),
             comp.ValueEdit(inputs=inputs,
                            keys=["/r", "/n"],
-                           title="Set Condition"
+                           title=cond_txt['set'],
                            ),
             comp.DupButton()
         ]
@@ -365,7 +389,7 @@ class Advanced(comp.SwitchButton):
 class Moves(miru.Button):
     def __init__(self):
         super().__init__(
-            label="Moves >",
+            label=c.getAsset(btl_data)['editor']['moves'],
             row=2
         )
 
@@ -389,7 +413,7 @@ class Moves(miru.Button):
 class Back(miru.Button):
     def __init__(self):
         super().__init__(
-            label="< Back",
+            label=c.getAsset(btl_data)['editor']['back'],
             row=2
         )
 
@@ -405,7 +429,7 @@ class Back(miru.Button):
 class Dialogue(miru.Button):
     def __init__(self):
         super().__init__(
-            label="Dialogue >",
+            label=c.getAsset(btl_data)['editor']['dialogue'],
             row=2
         )
 
@@ -426,23 +450,24 @@ class Dialogue(miru.Button):
 
 class EventMod(comp.ModalButton):
     def __init__(self, edit: bool = False):
+        event_txt = c.getAsset(
+            btl_data)['editor']['events']
         self.edit = edit
         if self.edit:
             emoji = chr(0x270F)
             style = ButtonStyle.SECONDARY
-            title = "Edit Event"
+            title = event_txt['edit']
         else:
             emoji = chr(0x2795)
             style = ButtonStyle.SUCCESS
-            title = "Add Event"
-        event_txt = c.getAsset(
-            "text/battle.json")['dialogue']['events']['label']
+            title = event_txt['add']
+        label_txt = event_txt['label']
 
         super().__init__(
             inputs=[
                 miru.TextInput(
-                    label=event_txt['title'],
-                    placeholder=event_txt['desc'],
+                    label=label_txt['title'],
+                    placeholder=label_txt['desc'],
                     style=TextInputStyle.PARAGRAPH,
                     required=True,
                     max_length=500
@@ -525,7 +550,7 @@ class DelEvent(comp.DelButton):
 class Chars(miru.Button):
     def __init__(self):
         super().__init__(
-            label="< Characters",
+            label=c.getAsset(btl_data)['editor']['chars']['menu'],
             row=2
         )
 
@@ -540,12 +565,21 @@ class Chars(miru.Button):
 
 class StAdd(miru.Button):
     def __init__(self):
-        super().__init__(emoji=chr(0x2B50), label="Save to Starlow", row=4)
+        super().__init__(
+            emoji=chr(0x2B50),
+            label=c.getAsset(btl_data)['editor']['save']['label'],
+            row=4
+        )
 
     async def callback(self, ctx: miru.ViewContext):
+        save_txt = c.getAsset(btl_data)['editor']['save']
         # ask for confirmation
         view = scr.ConfirmView(ctx)
-        msg = await ctx.respond(content="Would you like to add this battle to Starlow?", components=view, flags=MessageFlag.EPHEMERAL)
+        msg = await ctx.respond(
+            content=save_txt['q'],
+            components=view,
+            flags=MessageFlag.EPHEMERAL
+        )
         await view.start(msg)
         await view.wait_for_input()
         view.stop()
@@ -564,11 +598,17 @@ class StAdd(miru.Button):
                     sql_tools.saveID(
                         self.view.guild, self.view.save, False, i)
                     self.view.output = True
-                    await ctx.edit_response(content="Saved.", components=None)
+                    await ctx.edit_response(
+                        content=save_txt['a'],
+                        components=None
+                    )
                     break
                 elif i == 4:
                     self.view.output = False
-                    await ctx.edit_response(content="Max battle capacity reached (5 per server). Battle not saved.", components=None)
+                    await ctx.edit_response(
+                        content=save_txt['cap'],
+                        components=None
+                    )
             # edit confirmation and delete og
             await self.view.message.delete()
             self.view.stop()
@@ -578,12 +618,21 @@ class StAdd(miru.Button):
 
 class JsonExport(miru.Button):
     def __init__(self):
-        super().__init__(label="Export .json", row=4, style=ButtonStyle.SECONDARY)
+        super().__init__(
+            label=c.getAsset(btl_data)['editor']['json']['label'],
+            row=4,
+            style=ButtonStyle.SECONDARY
+        )
 
     async def callback(self, ctx: miru.ViewContext):
+        json_txt = c.getAsset(btl_data)['editor']['json']
         # ask for confirmation
         view = scr.ConfirmView(ctx)
-        msg = await ctx.respond(content="Would you like to export this battle as .json?", components=view, flags=MessageFlag.EPHEMERAL)
+        msg = await ctx.respond(
+            content=json_txt['q'],
+            components=view,
+            flags=MessageFlag.EPHEMERAL
+        )
         await view.start(msg)
         await view.wait_for_input()
         view.stop()
@@ -600,11 +649,12 @@ class JsonExport(miru.Button):
                 with open(path, "x") as file:
                     file.write(json.dumps(self.view.save))
                     try:
-                        await asyncio.wait_for(await ctx.respond(attachment=path), timeout=10)
+                        await asyncio.wait_for(
+                            await ctx.respond(attachment=path), timeout=10)
                     except Exception as e:
-                        await ctx.edit_response(content=f"Upload failed. ({e})", components=None)
+                        await ctx.edit_response(content=e, components=None)
                         os.remove(path)
             # edit confirmation and delete og
-            await ctx.edit_response(content="Done.", components=None)
+            await ctx.edit_response(content=json_txt['a'], components=None)
             await self.view.message.delete()
             self.view.stop()

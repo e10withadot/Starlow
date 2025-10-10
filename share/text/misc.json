@@ -1,3 +1,58 @@
 {
-    "disabled_cmd_alert": "This command was disabled by the server."
+    "disabled_cmd_alert": "This command was disabled by the server.",
+    "view_not_found": "Original view could not be deleted- it was not found.",
+    "fields": {
+        "edit": "Edit",
+        "other": "Other",
+        "move": "Move",
+        "stats": "Stats",
+        "name": {
+            "label": "Name",
+            "placeholder": "Input name."
+        },
+        "amount": {
+            "label": "Amount",
+            "placeholder": "Input amount to add/remove."
+        },
+        "hits": {
+            "label": "Hits",
+            "placeholder": "Input no. of times the move hits."
+        },
+        "info": {
+            "label": "Info",
+            "placeholder": "Input move description."
+        },
+        "cost": {
+            "label": "Cost",
+            "placeholder": "Input FP cost."
+        },
+        "emote": {
+            "label": "Emote",
+            "placeholder": "Input reaction emote."
+        },
+        "fp": {
+            "label": "FP",
+            "placeholder": "Input default flower points."
+        },
+        "hp": {
+            "label": "HP",
+            "placeholder": "Input maximum health points."
+        },
+        "pow": {
+            "label": "POW",
+            "placeholder": "Input default attack power."
+        },
+        "def": {
+            "label": "DEF",
+            "placeholder": "Input default defense points. (If empty, DEF = 0)"
+        },
+        "speed": {
+            "label": "Speed",
+            "placeholder": "Input default speed points. (If empty, Speed = 0)"
+        },
+        "stache": {
+            "label": "Stache",
+            "placeholder": "Input default stache points. (If empty, Stache = 0)"
+        },
+    }
 }

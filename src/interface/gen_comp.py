@@ -6,6 +6,9 @@ import miru
 from miru.ext import menu
 from copy import deepcopy
 from hikari import ButtonStyle, MessageFlag, Emoji, NotFoundError
+import config as c
+
+misc_data = "text/misc.json"
 
 
 class StarlowButton(menu.ScreenButton):
@@ -25,7 +28,13 @@ class SwitchButton(StarlowButton):
     A button that switches between a list of options.
     '''
 
-    def __init__(self, key: str = None, options: list[miru.SelectOption] = None, emojis: list[Emoji] = None, **kwargs):
+    def __init__(
+        self,
+        key: str = None,
+        options: list[miru.SelectOption] = None,
+        emojis: list[Emoji] = None,
+        **kwargs
+    ):
         super().__init__(style=ButtonStyle.SECONDARY, **kwargs)
         self.key = key
         self.options = options
@@ -152,8 +161,9 @@ class AddButton(ModalButton):
             self,
             title: str,
             inputs=[miru.TextInput(
-                label="Name",
-                placeholder="Input name.",
+                label=c.getAsset(misc_data)['fields']['name']['label'],
+                placeholder=c.getAsset(
+                    misc_data)['fields']['name']['placeholder'],
                 required=True,
                 max_length=30),
             ],
@@ -201,10 +211,12 @@ class ValueEdit(ModalButton):
             for i, key in enumerate(self.keys):
                 # key "/r" is root
                 if key == "/r":
-                    self.modal.children[i].value = self.screen.obj["names"][self.screen.page]
+                    self.modal.children[i].value = \
+                        self.screen.obj["names"][self.screen.page]
                 # key "/n" is numbered values
                 elif key == "/n":
-                    self.modal.children[i].value = self.screen.obj[self.screen.page]
+                    self.modal.children[i].value = \
+                        self.screen.obj[self.screen.page]
                 elif self.screen.has_pages():
                     self.modal.children[i].value = str(
                         self.screen.obj[self.screen.page][key])
@@ -259,7 +271,13 @@ class GenView(miru.View):
     Generic view interface.
     '''
 
-    def __init__(self, items, og: miru.View, obj: dict = None, timeout: int = 30.0):
+    def __init__(
+            self,
+            items,
+            og: miru.View,
+            obj: dict = None,
+            timeout: int = 30.0
+    ):
         super().__init__(timeout=timeout)
         self.og = og
         self.page = og.page
@@ -273,7 +291,7 @@ class GenView(miru.View):
         try:
             await self.message.delete()
         except NotFoundError:
-            print("Original view could not be deleted- it was not found.")
+            print(c.getAsset(misc_data)['view_not_found'])
 
 
 class NameButton(ValueEdit):
@@ -282,21 +300,32 @@ class NameButton(ValueEdit):
     '''
 
     def __init__(self, enemy: bool = False):
+        fields = c.getAsset(misc_data)['fields']
+        name_txt = fields['name']
+        fp_txt = fields['fp']
+        edit_txt = fields['edit']
         inputs = [
-            miru.TextInput(label="Name", placeholder="Input name.",
-                           required=True, max_length=30),
+            miru.TextInput(
+                label=name_txt['label'],
+                placeholder=name_txt['placeholder'],
+                required=True, max_length=30
+            ),
         ]
         if enemy:
-            label = "Name"
+            label = name_txt['label']
             keys = ["/r", ]
         else:
-            label = "Name & FP"
+            label = f"{name_txt['label']} & {fp_txt['label']}"
             keys = ["name", "FP"]
             inputs.append(
                 miru.TextInput(
-                    label="FP", placeholder="Input default flower points.", required=True, max_length=2)
+                    label=fp_txt['label'],
+                    placeholder=fp_txt['placeholder'],
+                    required=True,
+                    max_length=2
+                )
             )
-        title = f"Edit {label}"
+        title = f"{edit_txt} {label}"
         super().__init__(
             inputs=inputs,
             keys=keys,
@@ -312,23 +341,35 @@ class StatButton(ValueEdit):
     '''
 
     def __init__(self):
+        stat_txt = c.getAsset(misc_data)['fields']
         inputs = [
             miru.TextInput(
-                label="HP", placeholder="Input maximum health points.", required=True, max_length=3),
+                label=stat_txt['hp']['label'],
+                placeholder=stat_txt['hp']['placeholder'],
+                required=True,
+                max_length=3
+            ),
             miru.TextInput(
-                label="POW", placeholder="Input default attack power.", required=True, max_length=2),
+                label=stat_txt['pow']['label'],
+                placeholder=stat_txt['pow']['placeholder'],
+                required=True,
+                max_length=2
+            ),
             miru.TextInput(
-                label="DEF", placeholder="Input default defense points. (If empty, DEF = 0)", max_length=2),
+                label=stat_txt['def']['label'],
+                placeholder=stat_txt['def']['placeholder'], max_length=2),
             miru.TextInput(
-                label="Speed", placeholder="Input default speed points. (If empty, Speed = 0)", max_length=2),
+                label=stat_txt['speed']['label'],
+                placeholder=stat_txt['speed']['placeholder'], max_length=2),
             miru.TextInput(
-                label="Stache", placeholder="Input default stache points. (If empty, Stache = 0)", max_length=2)
+                label=stat_txt['stache']['label'],
+                placeholder=stat_txt['stache']['placeholder'], max_length=2)
         ]
         super().__init__(
             inputs=inputs,
             keys=["HP", "POW", "DEF", "SPEED", "STACHE"],
-            label="Other Stats",
-            title="Edit Stats",
+            label=f"{stat_txt['other']} {stat_txt['stats']}",
+            title=f"{stat_txt['edit']} {stat_txt['stats']}",
             style=ButtonStyle.SECONDARY
         )
 
@@ -339,27 +380,51 @@ class MoveEdit(ValueEdit):
     '''
 
     def __init__(self, badge: bool, enemy: bool):
+        fields = c.getAsset(misc_data)['fields']
         inputs = [
             miru.TextInput(
-                label="Name", placeholder="Input move name.", max_length=20, required=True),
+                label=fields['name']['label'],
+                placeholder=fields['name']['placeholder'],
+                max_length=20,
+                required=True
+            ),
             miru.TextInput(
-                label="Amount", placeholder="Input amount to add/remove.", max_length=2, required=True),
+                label=fields['amount']['label'],
+                placeholder=fields['amount']['placeholder'],
+                max_length=2,
+                required=True
+            ),
             miru.TextInput(
-                label="Hits", placeholder="Input no. of times the move hits.", max_length=1, required=True)
+                label=fields['hits']['label'],
+                placeholder=fields['hits']['placeholder'],
+                max_length=1,
+                required=True
+            )
         ]
         keys = ["/r", "amount", "hits"]
         extra = []
         eKeys = []
         if not enemy:
             extra.append(miru.TextInput(
-                label="Info", placeholder="Input move description.", max_length=45, required=True))
+                label=fields['info']['label'],
+                placeholder=fields['info']['placeholder'],
+                max_length=45,
+                required=True
+            ))
             eKeys.append("info")
             if badge:
                 extra.append(miru.TextInput(
-                    label="Cost", placeholder="Input FP cost.", max_length=2))
+                    label=fields['cost']['label'],
+                    placeholder=fields['cost']['placeholder'],
+                    max_length=2
+                ))
                 eKeys.append("cost")
             extra.append(miru.TextInput(
-                label="Emote", placeholder="Input reaction emote.", max_length=40, required=True))
+                label=fields['emote']['label'],
+                placeholder=fields['emote']['placeholder'],
+                max_length=40,
+                required=True
+            ))
             eKeys.append("icon")
         for i, item in enumerate(extra):
             inputs.insert(1, item)
@@ -367,8 +432,8 @@ class MoveEdit(ValueEdit):
         super().__init__(
             inputs=inputs,
             keys=keys,
-            title="Edit Move",
-            label="Edit",
+            title=f"{fields['edit']} {fields['move']}",
+            label=fields['edit'],
             style=ButtonStyle.SECONDARY
         )
 

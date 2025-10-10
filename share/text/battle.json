@@ -3,26 +3,72 @@
         "phases": {
             "empty": "An empty battle is a sad one.",
             "no_enemy": "Add enemies to the enemy list, then return to spawn them to the battlefield.",
-            "no_phase": "Spawn enemies into battle with the button below."
+            "no_phase": "Spawn enemies into battle with the button below.",
         },
+        "condition": {
+            "add": "Add Condition",
+            "set": "Set Condition",
+            "if": {
+                "label": "If",
+                "placeholder": "Input condition."
+            },
+            "then": {
+                "label": "Then",
+                "placeholder": "Input resulting event."
+            }
+        },
+        "moves": "Moves >",
+        "dialogue": "Dialogue >",
+        "back": "< Back",
         "enemies": {
-            "new_enemy": "New Enemy",
+            "new": "New Enemy",
             "empty": {
                 "title": "No enemies.",
                 "desc": "Add an enemy with the button below."
             },
-        },
-        "dialogue": {
-            "chars": {
-                "title": "No characters.",
-                "desc": "Add a character to use for dialogue events!"
+            "spawn": "Spawn Enemies",
+            "add": "Add Enemies",
+            "num": {
+                "title": "Number of Enemies",
+                "label": "Number",
+                "placeholder": "Input amount of enemies."
             },
-            "events": {
-                "label": {
-                    "title": "Dialogue Event",
-                    "desc": "[Character No.]:[Dialogue] (separated by new lines)."
-                }
+            "delete": "Delete Recent",
+            "clear": "Clear"
+        },
+        "chars": {
+            "title": "No characters.",
+            "desc": "Add a character to use for dialogue events!"
+            "add": "Add Character",
+            "edit": "Edit Character",
+            "menu": "< Characters",
+            "name": {
+                "label": "Name",
+                "placeholder": "Input name."
+            },
+            "url": {
+                "label": "Icon URL",
+                "placeholder": "Input icon URL."
             }
+        },
+        "events": {
+            "add": "Add Event",
+            "edit": "Edit Event",
+            "label": {
+                "title": "Dialogue Event",
+                "desc": "[Character No.]:[Dialogue] (separated by new lines)."
+            }
+        },
+        "save": {
+            "label": "Save to Starlow",
+            "q": "Would you like to add this battle to Starlow?",
+            "a": "Saved.",
+            "cap": "Max battle capacity reached (5 per server). Battle not saved."
+        },
+        "json": {
+            "label": "Export .json",
+            "q": "Would you like to export this battle as .json?",
+            "a": "Done."
         }
     }
 }
