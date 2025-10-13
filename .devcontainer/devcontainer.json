@@ -3,7 +3,6 @@
         "dockerFile": "Dockerfile",
         "context": "..",
     },
-    "runArgs": ["--env-file", "${localWorkspaceFolder}/.env"],
     "features":
     {
         "ghcr.io/e10withadot/features/neovim:0": {},
