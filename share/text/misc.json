@@ -6,6 +6,7 @@
         "other": "Other",
         "move": "Move",
         "stats": "Stats",
+        "coins": "coins",
         "name": {
             "label": "Name",
             "placeholder": "Input name."

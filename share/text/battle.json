@@ -1,6 +1,8 @@
 {
     "editor": {
         "phases": {
+            "title": "Order of Events",
+            "description": "Set the order of battle events, and their conditions.",
             "empty": "An empty battle is a sad one.",
             "no_enemy": "Add enemies to the enemy list, then return to spawn them to the battlefield.",
             "no_phase": "Spawn enemies into battle with the button below.",
@@ -21,6 +23,8 @@
         "dialogue": "Dialogue >",
         "back": "< Back",
         "enemies": {
+            "title": "Enemy List",
+            "description": "Edit enemies and their moves.",
             "new": "New Enemy",
             "empty": {
                 "title": "No enemies.",
@@ -52,6 +56,8 @@
             }
         },
         "events": {
+            "title": "Add Dialogue",
+            "description": "Add mid-battle dialogue.",
             "add": "Add Event",
             "edit": "Edit Event",
             "label": {
@@ -70,5 +76,14 @@
             "q": "Would you like to export this battle as .json?",
             "a": "Done."
         }
+    },
+    "no_slot": "That slot is empty. Use `/battle create` to add a new battle instead.",
+    "battle": {
+        "start": {
+            "title": "React to join!",
+            "desc": "If you want to join the battle, react to this message now!",
+            "footer": "The battle will start in 1 minute!",
+        },
+        "no_file": "Please select a battle from either your files or Starlow's database.",
     }
 }

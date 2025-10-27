@@ -11,12 +11,16 @@ from collections import defaultdict
 from copy import deepcopy
 from slipper import jsonStr
 
-# the Action class defines what battle actions do. Actions can consist of attacks, stickers, moves that cost FP, and items.
+
+'''
+The Action class defines what battle actions do.
+Actions can consist of attacks, stickers, moves that cost FP, and items.
+'''
 
 
 class Action:
     def __init__(self, obj: dict, name: str = None, id: int = 0):
-        # action id
+        ''''''
         self.id = id
         # is shown in battle as an option/the opposing party’s attack.
         self.name = name
@@ -36,7 +40,7 @@ class Action:
         self.offense = obj['offense']
         # action target. options: "One, All, Random"
         self.target = obj['target']
-        # a string that specifies which stat changes. Options: "HP, FP, POW, DEF, SPEED, STACHE"
+        # a string that specifies which stat changes.
         self.stat = obj['stat']
         # likelihood of spawning. Options: "Normal, Shiny, Flashy"
         if obj.get('rarity'):
@@ -44,11 +48,17 @@ class Action:
         # reaction emote
         if obj.get('icon'):
             self.icon = obj['icon']
-        # defines whether an Action will be performed only after a condition is met.
+        # defines whether an Action will be performed after a condition is met.
         self.scripted = obj.get('scripted')
 
     # deploy the action
-    async def deploy_action(self, target, channel: hikari.GuildChannel, sender=None, blocked: bool = False):
+    async def deploy_action(
+            self,
+            target,
+            channel: hikari.GuildChannel,
+            sender=None,
+            blocked: bool = False
+    ):
         for person in target:
             stat = getattr(person, self.stat)
             # check for wrong outcomes
@@ -116,39 +126,38 @@ class Action:
                 msg = await msg.edit(embed)
             time.sleep(0.3)
 
-# the Being class defines the player character, party members, or enemies. It stores their basic stats.
+
+'''
+The Being class defines the player character, party members, or enemies.
+It stores their basic stats.
+'''
 
 
 class Being:
     def __init__(self, obj: dict, name: str = None):
-        # the Being’s name.
         self.name = name
-        # max health points. HP is set to this on init, unless special exception occurs.
         self.maxHP = obj["HP"]
         self.HP = deepcopy(self.maxHP)
-        # same as maxHP but FP for special attacks/max sticker cap.
         if obj.get("FP"):
             self.maxFP = obj["FP"]
             self.FP = deepcopy(self.maxFP)
-        # set attack power. can flucutate in a battle, and if temporary- value resets to setPOW.
         self.setPOW = obj["POW"]
         self.POW = deepcopy(self.setPOW)
-        # same as setPOW, but for defense.
         self.setDEF = obj["DEF"]
         self.DEF = deepcopy(self.setDEF)
-        # same as setPOW, but determines turn order. Without speed, player starts.
         self.setSPEED = obj["SPEED"]
         self.SPEED = deepcopy(self.setSPEED)
-        # same as setPOW, but determines chance of lucky hits, and may increase store discounts.
         self.setSTACHE = obj["STACHE"]
         self.STACHE = deepcopy(self.setSTACHE)
-        # moves is an array of Actions/Action IDs.
         self.moves = []
         for i in range(len(obj["moves"])-1):
             self.moves.append(
                 Action(name=obj["moves"]["names"][i], obj=obj["moves"][i]))
 
-    # adds an Action to self.moves
+    '''
+    Adds an Action to self.moves
+    '''
+
     def add_move(self, obj: Action):
         self.moves.append(obj)
 
@@ -158,11 +167,17 @@ class Player(Being):
         super().__init__(obj, name)
         self.stickers = defaultdict(lambda: 0)
 
-    # adds a sticker
+    '''
+    Adds a sticker
+    '''
+
     def add_sticker(self, id: int):
         self.stickers[id] += 1
 
-# defines enemies in battle
+
+'''
+defines enemies in battle
+'''
 
 
 class Enemy(Being):
@@ -170,9 +185,7 @@ class Enemy(Being):
         super().__init__(obj[id], obj["names"][id])
         # the Enemy's id
         self.id = id
-        # spiny is a bool that determines whether the player can jump on the enemy(True= No, False= Yes).
         self.spiny = obj['spiny']
-        # flying is a bool that determines whether the player can hammer the enemy(True= No, False= Yes).
         self.flying = obj['flying']
 
 
@@ -181,10 +194,7 @@ class Battle:
         self.members = members
         self.player = Player(settings['player'], settings['player']['name'])
         # get special moves data
-        path = os.path.abspath(__file__).replace(
-            r"\btl_logic.py", r"\templates\special.json")
-        with open(path) as f:
-            moves = jsonStr(f.read())
+        moves = jsonStr(c.getAsset('/templates/special.json'))
         # add default moves
         n = len(moves-1)
         for i in range(n):
@@ -193,7 +203,10 @@ class Battle:
         if settings["moves"].get("names"):
             for i in range(n, len(settings['moves']-1)):
                 self.player.add_move(
-                    Action(settings["moves"][i], settings["moves"]['names'][i], i))
+                    Action(
+                        settings["moves"][i],
+                        settings["moves"]['names'][i], i)
+                )
         self.enemies = []
         for i in range(len(battle_info['enemies']-1)):
             self.enemies += Enemy(battle_info['enemies'], i)
@@ -218,7 +231,11 @@ class Battle:
         return moves
 
     # fill sticker inventory with randoms
-    async def sticker_roulette(self, ctx: lightbulb.Context, rMoves: list[dict]):
+    async def sticker_roulette(
+            self,
+            ctx: lightbulb.Context,
+            rMoves: list[dict]
+    ):
         if self.settings["coins"] >= 50:
             emojis = ['1️⃣']
             desc = "Choose an album to use for the battle!\n1️⃣ **Normal Album-** 50 coins."
