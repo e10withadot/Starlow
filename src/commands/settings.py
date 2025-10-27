@@ -2,13 +2,14 @@
 Handles settings commands.
 '''
 import hikari
+from miru import Client
 import sql_tools
 import config as c
 from slipper import jsonStr
 from interface.set_comp import SettingsMenu, MainScreen
 
 
-async def settings(self, event: hikari.InteractionCreateEvent) -> None:
+async def settings(client: Client, event: hikari.InteractionCreateEvent) -> None:
     '''
     Run the settings command.
     '''
@@ -16,6 +17,6 @@ async def settings(self, event: hikari.InteractionCreateEvent) -> None:
     save = jsonStr(loadedSave) if loadedSave else c.def_settings
     user = event.interaction.user
     menu = SettingsMenu(user, save)
-    builder = await menu.build_response_async(self.client, MainScreen(menu))
+    builder = await menu.build_response_async(client, MainScreen(menu))
     await builder.create_initial_response(event.interaction)
-    self.client.start_view(menu)
+    client.start_view(menu)

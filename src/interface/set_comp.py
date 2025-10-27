@@ -171,7 +171,7 @@ class Reward(menu.ScreenTextSelect):
 
     async def callback(self, ctx: miru.ViewContext) -> None:
         self.screen.obj["reward-items"] = self.values
-        await self.screen.update(ctx)
+        await self.screen.update_message(await self.screen.build_content())
 
 
 class BtlChannel(menu.ScreenChannelSelect):
@@ -188,7 +188,7 @@ class BtlChannel(menu.ScreenChannelSelect):
 
     async def callback(self, ctx: miru.ViewContext):
         self.screen.obj["channel"] = str(self.values[0].id)
-        await self.screen.update(ctx)
+        await self.screen.update_message(await self.screen.build_content())
 
 
 def reset_settings(button: scr.AlertButton):

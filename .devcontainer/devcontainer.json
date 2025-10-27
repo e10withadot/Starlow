@@ -7,6 +7,7 @@
     {
         "ghcr.io/e10withadot/features/neovim:0": {},
     },
+    "runArgs": ["--env-file","${localWorkspaceFolder}/.env"],
     "mounts": [
         {
             "type": "bind",

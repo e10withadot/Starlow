@@ -54,6 +54,6 @@
         "stache": {
             "label": "Stache",
             "placeholder": "Input default stache points. (If empty, Stache = 0)"
-        },
+        }
     }
 }

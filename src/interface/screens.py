@@ -55,22 +55,21 @@ class SetScreen(mm.Screen):
         self.key = key
 
     async def build_content(self) -> mm.ScreenContent:
-        for child in self.children:
-            if hasattr(child, 'on_change'):
-                child.on_change()
         if isinstance(self.embeds, Iterable) > 1:
             return mm.ScreenContent(embeds=self.embeds)
         return mm.ScreenContent(embed=self.embeds)
 
-    async def update(self, ctx: miru.abc.Context):
+    async def update_message(self, content=None):
+        for child in self.children:
+            if (hasattr(child, 'on_change')):
+                child.on_change()
+        await self.menu.update_message(content)
+
+    async def update(self):
         '''
-        Updates state of screen.
+        Update entire screen.
         '''
-        build = await self.build_content()
-        if build.embed:
-            await ctx.edit_response(content=build.content, embed=build.embed)
-        else:
-            await ctx.edit_response(content=build.content, embeds=build.embeds)
+        await self.menu.update_message(await self.build_content())
 
     @property
     def obj(self):
@@ -382,6 +381,7 @@ class MainMenu(mm.Menu):
         *,
         ephemeral: bool = False
     ) -> miru.MessageBuilder:
+        await starting_screen.update_message()
         return await super().build_response_async(client,
                                                   self.__sysadd__(
                                                       starting_screen),

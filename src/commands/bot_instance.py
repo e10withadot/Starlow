@@ -6,7 +6,7 @@ from hikari import SlashCommand, CommandOption, CommandChoice, CommandType
 import miru
 import sql_tools
 import config as c
-from settings import settings
+from commands.settings import settings
 import random
 from time import time
 
@@ -108,7 +108,7 @@ class StarlowBot(hikari.GatewayBot):
             builders.append(builder)
         return builders
 
-    async def run_commands(self, event: hikari.InteractionCreateEvent):
+    async def run_commands(self, event: hikari.Event):
         '''
         Handles initialization of slash commands.
         '''
@@ -116,16 +116,15 @@ class StarlowBot(hikari.GatewayBot):
                 and event.interaction.command_type == CommandType.SLASH:
             name = event.interaction.command_name
             if name == "ping":
-                if name == "ping":
-                    t = time()
-                    await event.interaction.create_initial_response(
-                        hikari.ResponseType.MESSAGE_CREATE,
-                        "Pong!"
-                    )
-                    ct = time() - t
-                    await event.interaction.edit_initial_response(
-                        f"Pong!\nResponse time: {round(ct, 2)}s"
-                    )
+                t = time()
+                await event.interaction.create_initial_response(
+                    hikari.ResponseType.MESSAGE_CREATE,
+                    "Pong!"
+                )
+                ct = time() - t
+                await event.interaction.edit_initial_response(
+                    f"Pong!\nResponse time: {round(ct, 2)}s"
+                )
 
             elif name == "luigi":
                 if sql_tools.isLuigi(event.interaction.guild_id):
@@ -137,4 +136,4 @@ class StarlowBot(hikari.GatewayBot):
                 else:
                     await c.disabledCmd(event.interaction)
             elif name == "settings":
-                await settings(event)
+                await settings(self.client, event)

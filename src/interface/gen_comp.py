@@ -30,58 +30,44 @@ class SwitchButton(StarlowButton):
 
     def __init__(
         self,
+        options: list[miru.SelectOption],
         key: str = None,
-        options: list[miru.SelectOption] = None,
-        emojis: list[Emoji] = None,
         **kwargs
     ):
         super().__init__(style=ButtonStyle.SECONDARY, **kwargs)
         self.key = key
         self.options = options
-        if self.options:
-            self.label = self.options[0].label
-        self.emojis = emojis
-        if self.emojis:
-            self.emoji = self.emojis[0]
+        self.label = self.options[0].label
         self.index = None
 
     def on_change(self):
-        if self.options:
-            # on init
-            if self.index is None:
-                value = self.screen.obj[self.screen.page][self.key] if self.screen.has_pages(
-                ) else self.screen.obj[self.key]
-                for i, option in enumerate(self.options):
-                    if option.value == value:
-                        self.label = option.label
-                        self.index = i
-                        break
-            # on change
-            else:
-                self.label = self.options[self.index].label
-            self.emoji = self.options[self.index].emoji
+        # on init
+        if self.index is None:
+            value = self.screen.obj[self.screen.page][self.key] \
+                if self.screen.has_pages() else self.screen.obj[self.key]
+            for i, option in enumerate(self.options):
+                if option.value == value:
+                    self.label = option.label
+                    self.emoji = option.emoji
+                    self.index = i
+                    break
+        # on change
         else:
-            self.emoji = self.emojis[self.index]
+            self.label = self.options[self.index].label
+            self.emoji = self.options[self.index].emoji
 
     async def callback(self, ctx: miru.ViewContext):
-        if self.options:
-            max_index = len(self.options)-1
-        else:
-            max_index = len(self.emojis)-1
-        if self.index + 1 <= max_index:
+        if self.index + 1 <= len(self.options)-1:
             self.index += 1
         else:
             self.index = 0
         if self.key:
-            if self.options:
-                output = self.options[self.index].value
-            else:
-                output = bool(self.index)
+            output = self.options[self.index].value
             if self.screen.has_pages():
                 self.screen.obj[self.screen.page][self.key] = output
             else:
                 self.screen.obj[self.key] = output
-        await self.screen.update(ctx)
+        await self.screen.update_message()
 
 
 class ToggleButton(SwitchButton):
@@ -89,10 +75,13 @@ class ToggleButton(SwitchButton):
     Button which toggles between On/Off.
     '''
 
-    def __init__(self, key: str, label: str, emojis: list[Emoji] = None):
+    def __init__(self, key: str, label: str, emojis: tuple[Emoji] = None):
         if not emojis:
-            emojis = ['🔴', '🟢']
-        super().__init__(key, emojis=emojis, label=label)
+            emojis = ('🔴', '🟢')
+        super().__init__(key=key, options=[
+            miru.SelectOption(label=label, emoji=emojis[0], value=False),
+            miru.SelectOption(label=label, emoji=emojis[1], value=True)
+        ], label=label)
 
     def on_change(self):
         if self.index is None:
@@ -190,7 +179,7 @@ class AddButton(ModalButton):
             self.screen.obj[i] = list(self.modal.values)[1].value
         else:
             self.screen.obj[i] = deepcopy(self.temp)
-        await self.screen.update(ctx)
+        await self.screen.update()
 
 
 class ValueEdit(ModalButton):
@@ -226,6 +215,7 @@ class ValueEdit(ModalButton):
     async def callback(self, ctx: miru.ViewContext):
         await super().callback(ctx)
         values = list(self.modal.values)
+        await self.modal.last_context.defer()
         updated = {}
         for i, key in enumerate(self.keys):
             value = values[i].value
@@ -243,7 +233,7 @@ class ValueEdit(ModalButton):
             self.screen.obj.update(updated)
         elif updated:
             self.screen.obj[self.screen.page].update(updated)
-        await self.screen.update(self.modal.last_context)
+        await self.screen.update()
 
 
 class UIEdit(GhostButton):
