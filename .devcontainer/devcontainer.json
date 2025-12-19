@@ -5,7 +5,9 @@
     },
     "features":
     {
-        "ghcr.io/e10withadot/features/neovim:0": {},
+        "ghcr.io/e10withadot/features/neovim:latest" : {
+            "treesitter": true
+        },
     },
     "runArgs": ["--env-file","${localWorkspaceFolder}/.env"],
     "mounts": [
