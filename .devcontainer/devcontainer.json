@@ -8,6 +8,7 @@
         "ghcr.io/e10withadot/features/neovim:latest" : {
             "treesitter": true
         },
+        "ghcr.io/devcontainers-extra/features/fzf:1": {},
     },
     "runArgs": ["--env-file","${localWorkspaceFolder}/.env"],
     "mounts": [
