@@ -1,25 +1,25 @@
 {
-    "build" : {
-        "dockerFile": "Dockerfile",
-        "context": "..",
-    },
+    "dockerFile": "Dockerfile",
+    "context": "..",
+    "runArgs": [
+        "--name", "${localWorkspaceFolderBasename}-devcontainer",
+        "--env-file","${localWorkspaceFolder}/.env",
+        "--security-opt=label=disable",
+        "-p", "2224:2222"
+    ],
     "features":
     {
         "ghcr.io/e10withadot/features/neovim:latest" : {
             "treesitter": true
         },
         "ghcr.io/devcontainers-extra/features/fzf:1": {},
+        "ghcr.io/devcontainers/features/sshd:1": {}
     },
-    "runArgs": [
-        "--env-file","${localWorkspaceFolder}/.env",
-        "--security-opt=label=disable",
-        "--userns=keep-id"
-    ],
     "mounts": [
         {
             "type": "bind",
             "source": "${localEnv:HOME}/.config/nvim/",
-            "target": "/home/vscode/.config/nvim/"
+            "target": "/root/.config/nvim/"
         }
     ],
 }
