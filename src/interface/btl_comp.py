@@ -21,8 +21,9 @@ class PhasePanel(scr.SetScreen):
     phase editor panel
     '''
 
-    def __init__(self):
+    def __init__(self, menu):
         super().__init__(
+            menu=menu,
             key="phases",
             components=[
                 SpawnEnemies(),
@@ -339,7 +340,10 @@ class ClearSpawn(miru.Button):
 class Advanced(comp.SwitchButton):
     def __init__(self):
         super().__init__(
-            emojis=['🔽', '🔼'],
+            options=[
+                miru.SelectOption(emoji='🔽', label=''),
+                miru.SelectOption(emoji='🔼', label='')
+            ],
             row=1
         )
 

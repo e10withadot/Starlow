@@ -5,22 +5,26 @@ import config as c
 from slipper import jsonStr
 import hikari
 from hikari import MessageFlag
+import miru
 from miru import SelectOption
 import btl_logic as btl
 import interface.screens as scr
 import interface.btl_comp as btlc
 
 
-async def btl_editor(event: hikari.InteractionCreateEvent):
+async def btl_editor(
+        client: miru.Client, event: hikari.InteractionCreateEvent):
     '''
     battle editor initalization
     '''
     # system buttons
     sys = [
         btlc.JsonExport(),
-        scr.QuitButton()
+        scr.DismissButton()
     ]
     btl_txt = c.getAsset("text/battle.json")
+    edit_txt = btl_txt['editor']
+    btl_save: dict
     if hasattr(event.interaction.options, "battle"):
         # get battle slot
         i = int(re.findall(r'\d+', event.interaction.options.battle)[0])-1
@@ -31,62 +35,55 @@ async def btl_editor(event: hikari.InteractionCreateEvent):
                 btl_txt["init"]["no_slot"],
                 flags=MessageFlag.EPHEMERAL)
             return
-        c.save = btl_save
         sys.insert(0, scr.SaveButton())
     else:
         i = None
-        c.save = {"phases": {"names": []}, "enemies": {"names": []},
-                  "dialogue": {"chars": {"names": []}, "events": []}}
+        btl_save = {"phases": {"names": []}, "enemies": {"names": []},
+                    "dialogue": {"chars": {"names": []}, "events": []}}
         sys.insert(0, btlc.StAdd())
     # battle editor options
     options = [
         SelectOption(
-            label=btl_txt['phases']['title'],
-            description=btl_txt['phases']['description'],
+            label=edit_txt['phases']['title'],
+            description=edit_txt['phases']['description'],
             emoji=chr(0x26F3), is_default=True),
-        SelectOption(label=btl_txt['enemies']['title'],
-                     description=btl_txt['enemies']['description'],
+        SelectOption(label=edit_txt['enemies']['title'],
+                     description=edit_txt['enemies']['description'],
                      emoji=chr(0x1F9CC)),
-        SelectOption(label=btl_txt['events']['title'],
-                     description=btl_txt['events']['description'],
+        SelectOption(label=edit_txt['events']['title'],
+                     description=edit_txt['events']['description'],
                      emoji=chr(0x1F4AC))
-    ]
-    # Editor panels
-    panels = [
-        btlc.PhasePanel(),
-        btlc.EnemyPanel(),
-        btlc.CharPanel()
     ]
     # current command user
     user = event.interaction.user.id
-    view = scr.MainView(user, panels, options, sys)
+    menu = scr.MainMenu(user, options, sys)
     # battle slot no. (only on edit)
-    view.choice = i
-    if isinstance(view.pages, list):
-        embed1 = view.pages[0]
+    menu.choice = i
+    if isinstance(menu.pages, list):
+        embed1 = menu.pages[0]
     else:
-        embed1 = view.pages
+        embed1 = menu.pages
     # Starts UI View with the embed
     await event.interaction.create_initial_response(
         hikari.ResponseType.MESSAGE_CREATE,
         embed=embed1,
-        components=view
+        components=menu
     )
-    c.miru_client.start_view(view)
-    await view.wait()
+    client.start_view(menu)
+    await menu.wait()
 
 
 async def start_battle(event: hikari.InteractionCreateEvent):
-    if event.interaction.options.battle or event.interaction.options.file:
+    if event.interaction.options:
         # check for input
-        if event.interaction.options.battle:
+        if event.interaction.options[0].type == hikari.OptionType.STRING:
             # get slot index
             i = int(re.findall(r'\d+', event.interaction.options.battle)[0])-1
             # get battle from slot
             btl_info = sql_tools.loadID(event.interaction.guild_id, False)[i]
-        elif event.interaction.options.file:
+        elif event.interaction.options[0].type == hikari.OptionType.ATTACHMENT:
             # read file
-            async with event.interaction.options.file.stream() as f:
+            async with event.interaction.options[0].value.stream() as f:
                 data = await f.read()
             btl_info = jsonStr(data.decode("utf-8"))
         # get settings

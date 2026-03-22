@@ -1,5 +1,6 @@
 '''
-Generic Screen interface elements. Includes standard, settings, and paged screens.
+Generic Screen interface elements.
+Includes standard, settings, and paged screens.
 '''
 import hikari
 import miru
@@ -39,12 +40,13 @@ class SetScreen(mm.Screen):
     Generic screen fmor setting parameters.
     '''
 
-    def __init__(self,
-                 menu: mm.Menu,
-                 components: list[miru.abc.ViewItem] | miru.abc.ViewItem = None,
-                 embeds: hikari.Embed | list[hikari.Embed] = None,
-                 key: str = None,
-                 ):
+    def __init__(
+        self,
+        menu: mm.Menu,
+        components: list[miru.abc.ViewItem] | miru.abc.ViewItem = None,
+        embeds: hikari.Embed | list[hikari.Embed] = None,
+        key: str = None,
+    ):
         super().__init__(menu)
         self.embeds = embeds
         if isinstance(components, Iterable):
@@ -126,24 +128,31 @@ class MoveScreen(SetScreen):
             comp.UIEdit(
                 items=[
                     comp.MoveEdit(self.badge, self.enemy),
-                    comp.ToggleButton("offense", 'Offensive'),
-                    comp.SwitchButton("target", [
-                        miru.SelectOption("One", "one", emoji='🚹'),
-                        miru.SelectOption("All", "all", emoji='🚻'),
-                        miru.SelectOption("Random", "random", emoji='❔')
+                    comp.ToggleButton(key="offense", label='Offensive'),
+                    comp.SwitchButton(key="target", options=[
+                        miru.SelectOption(label="One", value="one",
+                                          emoji='🚹'),
+                        miru.SelectOption(label="All", value="all",
+                                          emoji='🚻'),
+                        miru.SelectOption(label="Random", value="random",
+                                          emoji='❔')
                     ]),
-                    comp.SwitchButton("type", [
-                        miru.SelectOption("Ground", "ground", emoji='🔨'),
-                        miru.SelectOption("Aerial", "air", emoji='👞'),
-                        miru.SelectOption("Magic", "magic", emoji='🎩')
+                    comp.SwitchButton(key="type", options=[
+                        miru.SelectOption(label="Ground", value="ground",
+                                          emoji='🔨'),
+                        miru.SelectOption(label="Aerial", value="air",
+                                          emoji='👞'),
+                        miru.SelectOption(label="Magic", value="magic",
+                                          emoji='🎩')
                     ]),
-                    comp.SwitchButton("stat", [
-                        miru.SelectOption("HP", "HP", emoji='♥'),
-                        miru.SelectOption("FP", "FP", emoji='🌻'),
-                        miru.SelectOption("POW", "POW", emoji='💥'),
-                        miru.SelectOption("DEF", "DEF", emoji='🛡'),
-                        miru.SelectOption("Speed", "SPEED", emoji='👟'),
-                        miru.SelectOption("Stache", "STACHE",
+                    comp.SwitchButton(key="stat", options=[
+                        miru.SelectOption(label="HP", value="HP", emoji='♥'),
+                        miru.SelectOption(label="FP", value="FP", emoji='🌻'),
+                        miru.SelectOption(label="POW", value="POW", emoji='💥'),
+                        miru.SelectOption(label="DEF", value="DEF", emoji='🛡'),
+                        miru.SelectOption(label="Speed", value="SPEED",
+                                          emoji='👟'),
+                        miru.SelectOption(label="Stache", value="STACHE",
                                           emoji=chr(0x1F978))
                     ])
                 ]),
@@ -151,10 +160,10 @@ class MoveScreen(SetScreen):
             comp.DelButton()
         ]
         if not index:
-            items[1].items.append(comp.SwitchButton("rarity", [
-                miru.SelectOption("Normal", "norm", emoji='🟡'),
-                miru.SelectOption("Shiny", "shiny", emoji='✨'),
-                miru.SelectOption("Flashy", "flash", emoji='🎆')
+            items[1].items.append(comp.SwitchButton(key="rarity", options=[
+                miru.SelectOption(label="Normal", value="norm", emoji='🟡'),
+                miru.SelectOption(label="Shiny", value="shiny", emoji='✨'),
+                miru.SelectOption(label="Flashy", value="flash", emoji='🎆')
             ]))
         super().__init__(menu, components=items, key="moves")
 
@@ -388,6 +397,7 @@ class MainMenu(mm.Menu):
                                                   ephemeral=ephemeral)
 
     async def push(self, screen: SetScreen) -> None:
+        await screen.update_message()
         await super().push(self.__sysadd__(screen))
 
     async def view_check(self, ctx: miru.ViewContext) -> bool:
@@ -398,7 +408,7 @@ class MainMenu(mm.Menu):
 
     async def on_timeout(self) -> None:
         await self.ctx.respond(
-            content="The request timed out.\nThe interface will no longer respond to inputs.",
+            content=c.getAsset('text/misc.json')['view_timeout'],
             flags=MessageFlag.EPHEMERAL
         )
         await self.message.delete()

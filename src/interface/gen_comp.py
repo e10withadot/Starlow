@@ -63,6 +63,7 @@ class SwitchButton(StarlowButton):
             self.index = 0
         if self.key:
             output = self.options[self.index].value
+            print(output)
             if self.screen.has_pages():
                 self.screen.obj[self.screen.page][self.key] = output
             else:
@@ -79,9 +80,11 @@ class ToggleButton(SwitchButton):
         if not emojis:
             emojis = ('🔴', '🟢')
         super().__init__(key=key, options=[
-            miru.SelectOption(label=label, emoji=emojis[0], value=False),
-            miru.SelectOption(label=label, emoji=emojis[1], value=True)
+            miru.SelectOption(label=label, emoji=emojis[0]),
+            miru.SelectOption(label=label, emoji=emojis[1])
         ], label=label)
+        self.options[0].value = False
+        self.options[1].value = True
 
     def on_change(self):
         if self.index is None:
@@ -90,6 +93,18 @@ class ToggleButton(SwitchButton):
             else:
                 self.index = int(self.screen.obj[self.key])
         super().on_change()
+
+
+class BackButton(StarlowButton):
+    '''
+    Button that goes back.
+    '''
+
+    def __init__(self):
+        super().__init__(label="< Back", row=4)
+
+    async def callback(self, ctx: miru.ViewContext):
+        await self.menu.pop()
 
 
 class GhostButton(StarlowButton):

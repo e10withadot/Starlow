@@ -63,11 +63,13 @@ class MainScreen(scr.SetScreen):
         )
 
     @menu.button(label="Player Settings", emoji="👤", row=3)
-    async def player_settings(self, ctx: miru.ViewContext, button: menu.ScreenButton):
+    async def player_settings(self, ctx: miru.ViewContext,
+                              button: menu.ScreenButton):
         await self.menu.push(PlayerSettings(self.menu))
 
     @menu.button(label="Battle Settings", emoji='⚔', row=3)
-    async def battle_settings(self, ctx: miru.ViewContext, button: menu.ScreenButton):
+    async def battle_settings(self, ctx: miru.ViewContext,
+                              button: menu.ScreenButton):
         await self.menu.push(BattleSettings(self.menu))
 
 
@@ -81,29 +83,28 @@ class PlayerSettings(scr.SetScreen):
             menu,
             [
                 comp.NameButton(),
-                comp.StatButton()
+                comp.StatButton(),
+                comp.BackButton()
             ],
             key="player")
 
-    @menu.button(label="< Back", row=3)
-    async def back(self, ctx: miru.ViewContext, button: menu.ScreenButton):
-        await self.menu.pop()
-
-    @menu.button(label="Move Pool", emoji="🎰", row=3)
-    async def move_pool(self, ctx: miru.ViewContext, button: menu.ScreenButton):
-        await self.menu.push(scr.MoveScreen(menu, False, c.badgeMode(self.menu.save)))
+    @menu.button(label='Move Pool', emoji='🎰', row=3)
+    async def move_pool(self,
+                        ctx: miru.ViewContext, button: menu.ScreenButton):
+        await self.menu.push(scr.MoveScreen(menu, False,
+                                            c.badgeMode(self.menu.save)))
 
     async def build_content(self):
         plyr_info = c.printEntityData(self.obj)
         move_info = ''
-        if hasattr(self.menu.save, "moves"):
+        if hasattr(self.menu.save, 'moves'):
             for i, move in self.menu.save['moves']:
                 if not isinstance(i, str):
                     move_info += f'{move['name']}, '
             move_info.removesuffix(', ')
         else:
             move_info += 'No moves.'
-        title = "Player Settings"
+        title = 'Player Settings'
         info = f'''### Player Info\n{plyr_info}\n### Moves\n{move_info}'''
         self.embeds = c.StEmbed(title=title, description=info)
         return await super().build_content()
@@ -122,23 +123,22 @@ class BattleSettings(scr.SetScreen):
             menu,
             components=[
                 BtlChannel(),
-                comp.ToggleButton("hideHP", "Hide HP"),
+                comp.ToggleButton('hideHP', 'Hide HP'),
                 Reward(),
-                comp.SwitchButton("reward-set", options=[
-                    miru.SelectOption("All", "all", emoji='🖐️'),
-                    miru.SelectOption("Choice", "choice", emoji='☝️'),
-                    miru.SelectOption("Random", "random", emoji='👈')
-                ])
+                comp.SwitchButton(key='reward-set', options=[
+                    miru.SelectOption('All', 'all', emoji='🖐️'),
+                    miru.SelectOption('Choice', 'choice', emoji='☝️'),
+                    miru.SelectOption('Random', 'random', emoji='👈')
+                ]),
+                comp.BackButton()
             ])
 
     async def build_content(self):
-        des = c.getAsset('text/settings.json')['main']['battle']['desc']
-        self.embeds = c.StEmbed(title="Battle Settings", description=des)
+        des: str = c.getAsset('text/settings.json')['main']['battle']['desc']
+        des = des.replace('&&&', f"<#{self.obj['channel']}>"
+                          if self.obj.get('channel') else 'None')
+        self.embeds = c.StEmbed(title='Battle Settings', description=des)
         return await super().build_content()
-
-    @menu.button(label="< Back", row=3)
-    async def back(self, ctx: miru.ViewContext, button: menu.ScreenButton):
-        await self.menu.pop()
 
 # Reward Selection
 
@@ -150,19 +150,19 @@ class Reward(menu.ScreenTextSelect):
 
     def __init__(self):
         options = [
-            miru.SelectOption(label="HP-Up Heart", value="HP"),
-            miru.SelectOption(label="FP-Up Flower", value="FP"),
-            miru.SelectOption(label="Speed-Up Soles", value="SPEED"),
-            miru.SelectOption(label="Stache-Up Comb", value="STACHE")
+            miru.SelectOption(label='HP-Up Heart', value='HP'),
+            miru.SelectOption(label='FP-Up Flower', value='FP'),
+            miru.SelectOption(label='Speed-Up Soles', value='SPEED'),
+            miru.SelectOption(label='Stache-Up Comb', value='STACHE')
         ]
         super().__init__(
             options=options,
-            placeholder="Select rewards.",
+            placeholder='Select rewards.',
             max_values=4
         )
 
     def on_change(self):
-        values = self.screen.obj["reward-items"]
+        values = self.screen.obj['reward-items']
         if values:
             for i, value in enumerate(values):
                 option = self.options[i]
@@ -170,8 +170,8 @@ class Reward(menu.ScreenTextSelect):
                     option.is_default = True
 
     async def callback(self, ctx: miru.ViewContext) -> None:
-        self.screen.obj["reward-items"] = self.values
-        await self.screen.update_message(await self.screen.build_content())
+        self.screen.obj['reward-items'] = self.values
+        await self.screen.update_message()
 
 
 class BtlChannel(menu.ScreenChannelSelect):
@@ -180,15 +180,12 @@ class BtlChannel(menu.ScreenChannelSelect):
     '''
 
     def __init__(self):
-        super().__init__(placeholder="Select Battle Channel")
+        super().__init__(placeholder='Select Battle Channel')
         self.channel_type = 0
 
-    def on_change(self):
-        self.value = self.screen.obj["channel"]
-
     async def callback(self, ctx: miru.ViewContext):
-        self.screen.obj["channel"] = str(self.values[0].id)
-        await self.screen.update_message(await self.screen.build_content())
+        self.screen.obj['channel'] = str(self.values[0].id)
+        await self.screen.update()
 
 
 def reset_settings(button: scr.AlertButton):

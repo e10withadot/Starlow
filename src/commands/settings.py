@@ -9,7 +9,9 @@ from slipper import jsonStr
 from interface.set_comp import SettingsMenu, MainScreen
 
 
-async def settings(client: Client, event: hikari.InteractionCreateEvent) -> None:
+async def settings(
+        client: Client,
+        event: hikari.InteractionCreateEvent) -> None:
     '''
     Run the settings command.
     '''

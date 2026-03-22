@@ -7,6 +7,7 @@ import miru
 import sql_tools
 import config as c
 from commands.settings import settings
+import commands.battle as battle
 import random
 from time import time
 
@@ -137,3 +138,10 @@ class StarlowBot(hikari.GatewayBot):
                     await c.disabledCmd(event.interaction)
             elif name == "settings":
                 await settings(self.client, event)
+            elif name == "battle":
+                subcommand = event.interaction.options[0]
+                if subcommand.type == hikari.OptionType.SUB_COMMAND:
+                    if subcommand.name == "start":
+                        await battle.start_battle(event)
+                    else:
+                        await battle.btl_editor(self.client, event)

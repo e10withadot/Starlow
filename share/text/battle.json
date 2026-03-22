@@ -5,7 +5,7 @@
             "description": "Set the order of battle events, and their conditions.",
             "empty": "An empty battle is a sad one.",
             "no_enemy": "Add enemies to the enemy list, then return to spawn them to the battlefield.",
-            "no_phase": "Spawn enemies into battle with the button below.",
+            "no_phase": "Spawn enemies into battle with the button below."
         },
         "condition": {
             "add": "Add Condition",
@@ -42,7 +42,7 @@
         },
         "chars": {
             "title": "No characters.",
-            "desc": "Add a character to use for dialogue events!"
+            "desc": "Add a character to use for dialogue events!",
             "add": "Add Character",
             "edit": "Edit Character",
             "menu": "< Characters",
@@ -82,8 +82,8 @@
         "start": {
             "title": "React to join!",
             "desc": "If you want to join the battle, react to this message now!",
-            "footer": "The battle will start in 1 minute!",
+            "footer": "The battle will start in 1 minute!"
         },
-        "no_file": "Please select a battle from either your files or Starlow's database.",
+        "no_file": "Please select a battle from either your files or Starlow's database."
     }
 }

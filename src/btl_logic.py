@@ -4,7 +4,6 @@ import time
 import math
 import random
 import hikari
-import lightbulb
 import sql_tools
 import config as c
 from collections import defaultdict
@@ -190,7 +189,9 @@ class Enemy(Being):
 
 
 class Battle:
-    def __init__(self, members: int, battle_info: dict, settings: dict):
+    def __init__(self, bot: hikari.GatewayBot, members: int, battle_info: dict,
+                 settings: dict):
+        self.bot = bot
         self.members = members
         self.player = Player(settings['player'], settings['player']['name'])
         # get special moves data
@@ -233,7 +234,6 @@ class Battle:
     # fill sticker inventory with randoms
     async def sticker_roulette(
             self,
-            ctx: lightbulb.Context,
             rMoves: list[dict]
     ):
         if self.settings["coins"] >= 50:
@@ -252,7 +252,7 @@ class Battle:
                 .set_footer(f'{self.settings["coins"]} coins')
             )
             msg = await self.channel.send(embed=embed)
-            choice = await react_count(ctx.app.rest, self.members, msg, emojis)
+            choice = await react_count(self.members, msg, emojis)
             # message to send
             txt = ""
             # modify according to choice
@@ -279,17 +279,17 @@ class Battle:
                     move_index = random.randint(0, len(rMoves[rarity])-1)
                     self.player.add_sticker(move_index)
                 # save coin amount to db
-                sql_tools.saveID(ctx.guild_id, self.settings)
+                sql_tools.saveID(self.settings)
         else:
             txt = "Not enough coins to buy from the album shop!"
         await self.channel.send(txt)
 
     # manages turn events and order
-    async def turn_order(self, ctx: lightbulb.Context):
+    async def turn_order(self):
         # moves grouped by rarity
         rMoves = self.group_rare()
         # player data
-        await self.sticker_roulette(ctx, rMoves)
+        await self.sticker_roulette(rMoves)
         # player/enemy lineup
         lineup = [self.player]
         await self.channel.send(c.StEmbed(title="B A T T L E  S T A R T !"))
@@ -297,7 +297,7 @@ class Battle:
         pIndex = 0
         eIndex = []
         # initial condition check
-        await self.cond_check(ctx, lineup, eIndex, pIndex)
+        await self.cond_check(lineup, eIndex, pIndex)
         # battle loop
         while not self.win and not self.lose:
             # speed check, reset player/enemy indexes
@@ -354,7 +354,7 @@ class Battle:
                             .set_footer(f"{self.settings['coins']} coins")
                         )
                         msg = await self.channel.send(embed)
-                        one = await react_count(ctx.app.rest, self.members, msg, emojis)
+                        one = await react_count(self.members, msg, emojis)
                         # jump or hammer
                         if one.id == 0 or one.id == 1:
                             # if jump, else hammer
@@ -380,7 +380,7 @@ class Battle:
                             embed = c.StEmbed(
                                 title="Sticker Album", description=desc)
                             msg = await self.channel.send(embed)
-                            choice = await react_count(ctx.app.rest, self.members, msg, emojis)
+                            choice = await react_count(self.members, msg, emojis)
                             # fetch move
                             move = guy.moves[id]
                             # remove sticker
@@ -397,7 +397,7 @@ class Battle:
                                     break
                             # remove 15 coins
                             self.settings['coins'] -= 15
-                            sql_tools.saveID(ctx.guild_id, self.settings)
+                            sql_tools.saveID(self.settings)
                             one_more = True
                             continue
                         # target selection
@@ -414,7 +414,7 @@ class Battle:
                                     embed = c.StEmbed(
                                         title="Select a target!", description=desc)
                                     msg = await self.channel.send(embed)
-                                    two = await react_count(ctx.app.rest, self.members, msg, emojis)
+                                    two = await react_count(self.members, msg, emojis)
                                     target = [lineup[eIndex[two.id]]]
                                 elif move.target == "All":
                                     target = []
@@ -434,7 +434,7 @@ class Battle:
                             embed = c.StEmbed(
                                 title="Block the attack!", description="React to this message to block enemies' attacks!")
                             msg = await self.channel.send(embed)
-                            react = await react_count(ctx.app.rest, self.members, msg, ['🛡'])
+                            react = await react_count(self.members, msg, ['🛡'])
                             # check if valid
                             if react.count > self.members*0.75:
                                 blocked = True
@@ -463,7 +463,7 @@ class Battle:
                         one_more = True
                         await self.channel.send(c.StEmbed(description="One more!"))
                 # rotating condition check
-                await self.cond_check(ctx, lineup, eIndex, pIndex)
+                await self.cond_check(lineup, eIndex, pIndex)
                 # check if 0 HP
                 for person in target:
                     if person.HP <= 0:
@@ -516,7 +516,7 @@ class Battle:
                     desc += f"💇‍♂️ Stache-Up Comb"
                 embed = c.StEmbed(title="Select Reward!", description=desc)
                 msg = await self.channel.send(embed)
-                choice = await react_count(ctx.app.rest, self.members, msg, emojis)
+                choice = await react_count(self.members, msg, emojis)
                 # get stat
                 if choice.id == 0:
                     stat = ['HP']
@@ -542,7 +542,7 @@ class Battle:
                 coins += (int(enemy['HP'])+int(enemy['POW'])+int(enemy['DEF']))
             self.settings['coins'] += coins
             # save to database
-            sql_tools.saveID(ctx.guild_id, self.settings)
+            sql_tools.saveID(self.settings)
             # send final message
             embed = (
                 c.StEmbed(title="Rewards:", description=f"{
@@ -554,7 +554,7 @@ class Battle:
             await self.channel.send("You lose.")
 
     # condition check and result execution
-    async def cond_check(self, ctx: lightbulb.Context, lineup: list[Being], eIndex: list[int], pIndex: int):
+    async def cond_check(self, lineup: list[Being], eIndex: list[int], pIndex: int):
         for phase in range(len(self.phases)-1):
             met = 0
             conditions = self.phases["names"][phase].replace(" ", "")
@@ -662,15 +662,15 @@ class Battle:
                             if not webhook:
                                 # check if webhook can be fetched, if not- create webhook
                                 try:
-                                    webhook = await ctx.app.rest.fetch_webhook(self.settings.get("webhook"))
+                                    webhook = await self.bot.rest.fetch_webhook(self.settings.get("webhook"))
                                 except:
-                                    webhook = await ctx.app.rest.create_webhook(channel=self.channel, name="Starlow")
+                                    webhook = await self.bot.rest.create_webhook(channel=self.channel, name="Starlow")
                                     # save webhook id to database
                                     self.settings["webhook"] = webhook.webhook_id
                                     sql_tools.saveID(
-                                        ctx.guild_id, self.settings)
+                                        self.bot.guild_id, self.settings)
                             await webhook.edit(name=self.dialogue["chars"]["names"][int(line[0])-1], avatar=self.dialogue["chars"][int(line[0])-1])
-                            await ctx.app.rest.execute_webhook(webhook, webhook.token, line[1])
+                            await self.bot.rest.execute_webhook(webhook, webhook.token, line[1])
                         await webhook.edit(name="Starlow")
                         time.sleep(0.3)
                     # system messages

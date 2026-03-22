@@ -1,6 +1,7 @@
 {
     "disabled_cmd_alert": "This command was disabled by the server.",
     "view_not_found": "Original view could not be deleted- it was not found.",
+    "view_timeout": "The request timed out.\nThe interface will no longer respond to inputs.",
     "fields": {
         "edit": "Edit",
         "other": "Other",
