@@ -44,20 +44,21 @@ def getAsset(path: str) -> str | dict:
     Get a Starlow asset.
     '''
     root_path = Path(__file__).resolve().parent.parent
-    path = root_path / f"share/{path}"
-    with open(path) as f:
-        fext = path.as_posix().split(".")[-1]
+    new_path: Path = root_path / f"share/{path}"
+    with open(new_path) as f:
+        fext = new_path.as_posix().split(".")[-1]
         if fext == "txt":
             return f.read()
         elif fext == "json":
             return json.loads(f.read())
+    return ''
 
 
 async def disabledCmd(interaction: hikari.CommandInteraction):
     '''
     Sends a default "Command disabled" response.
     '''
-    notice = getAsset("text/misc.json").get('disabled_cmd_alert')
+    notice = getAsset("text/misc.json").get('disabled_cmd_alert')  # pyright: ignore[reportAssignmentType, reportAttributeAccessIssue]
     await interaction.create_initial_response(
         hikari.ResponseType.MESSAGE_CREATE, embed=hikari.Embed(
             title=notice, color=0xFF0000))
